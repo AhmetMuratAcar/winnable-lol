@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Winnable.lol",
+  title: "Winnable",
   description: "A website for checking your win probability in League of Legends.",
 };
 
