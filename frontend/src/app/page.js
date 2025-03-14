@@ -5,11 +5,9 @@ import MainSection from "./components/MainSection";
 
 export default function Home() {
   return (
-    <main>
+    <main className="min-h-svh flex flex-col">
       <Navbar />
-      <div className="w-full mt-0">
-        <MainSection />
-      </div>
+      <MainSection />
       <Footer />
     </main>
   );
