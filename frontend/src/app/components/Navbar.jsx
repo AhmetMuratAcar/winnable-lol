@@ -1,8 +1,10 @@
 const Navbar = () => {
 	return (
-		<nav className="bg-(--contrast)">
-			<p>This is a Navbar</p>
-		</nav>
+		<section id="NavbarSection">
+			<nav className="bg-(--contrast)">
+				<p>This is a Navbar</p>
+			</nav>
+		</section>
 	);
 };
 

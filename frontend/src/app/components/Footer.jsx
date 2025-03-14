@@ -1,10 +1,12 @@
 const Footer = () => {
 	return (
-		<footer>
-			<div>
-				<p>This is a footer</p>
-			</div>
-		</footer>
+		<section id="FooterSection">
+			<footer className="bg-(--contrast)">
+				<div>
+					<p>This is a footer</p>
+				</div>
+			</footer>
+		</section>
 	);
 };
 
