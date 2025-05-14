@@ -4,12 +4,12 @@ import Image from "next/image";
 const MainSection = () => {
 	return (
 		<section id="MainSection" className="flex flex-col flex-grow items-center justify-start">
-			<Image 
-				src="/images/cope.png"
-				width={718}
-				height={347}
-				alt="copium pepe"
-				className="m-10 rounded-4xl"
+			<Image
+				src="/images/logo.png"
+				width={350}
+				height={350}
+				alt="logo"
+				className="m-10"
 			/>
 
 			<form className="flex items-center bg-[#31313c] rounded-full px-4 py-2 w-full max-w-xl">
