@@ -1,9 +1,18 @@
 const Footer = () => {
 	return (
 		<section id="FooterSection">
-			<footer className="bg-(--contrast)">
+			<footer className="bg-(--contrast) h-12 items-center justify-center text-center flex">
 				<div>
-					<p>This is a footer</p>
+					<p>
+						Check it out on 
+						<a 
+							href="https://github.com/AhmetMuratAcar/winnable-lol"
+							target='_blank'
+							className="text-blue-500"
+						> Github
+						</a>
+						!
+					</p>
 				</div>
 			</footer>
 		</section>
