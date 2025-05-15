@@ -46,7 +46,7 @@ const Header = () => {
         {showInfo && (
           <div className="absolute right-0 mt-2 w-64 p-4 bg-white text-gray-800 border border-gray-300 rounded shadow-lg">
             <p className="text-sm">
-              Welcome to Winnable. Enter your Riot ID to check the win probability prediction of your current game.
+              Welcome to Winnable. Enter your Riot ID to check the win probability prediction of your current Leauge of Legends ranked game.
             </p>
           </div>
         )}
