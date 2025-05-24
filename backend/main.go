@@ -3,19 +3,38 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/AhmetMuratAcar/winnable-lol/internal/handlers"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	const PORT = "8080"
+	if err := run(); err != nil {
+		log.Fatalf("Application error: %v", err)
+	}
+}
+
+func run() error {
+	// load and set env variables
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found or failed to load; using system environment")
+	}
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // default fallback
+	}
 
 	// Handlers
-	http.HandleFunc("/current-game", handlers.CurrentGameHandler)
+	mux := http.NewServeMux()
+	mux.Handle("/health", &handlers.HealthHandler{})
 
 	// Starting server
-	log.Printf("Server is running on port %s...", PORT)
-	if err := http.ListenAndServe(":"+PORT, nil); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+	log.Printf("Server is running on port %s...", port)
+	if err := http.ListenAndServe(":"+port, mux); err != nil {
+		return err
 	}
+
+	return nil
 }
