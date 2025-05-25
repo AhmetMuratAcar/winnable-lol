@@ -16,7 +16,7 @@ func main() {
 }
 
 func run() error {
-	// load and set env variables
+	// Load and set env variables
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found or failed to load; using system environment")
 	}
@@ -29,6 +29,7 @@ func run() error {
 	// Handlers
 	mux := http.NewServeMux()
 	mux.Handle("/health", &handlers.HealthHandler{})
+	mux.Handle("/game", &handlers.GameHandler{})
 
 	// Starting server
 	log.Printf("Server is running on port %s...", port)
