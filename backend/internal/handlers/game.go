@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/AhmetMuratAcar/winnable-lol/internal/riot"
+	"github.com/AhmetMuratAcar/winnable-lol/backend/internal/riot"
 )
 
 type RequestBody struct {

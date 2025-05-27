@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/AhmetMuratAcar/winnable-lol/internal/handlers"
+	"github.com/AhmetMuratAcar/winnable-lol/backend/internal/handlers"
 	"github.com/joho/godotenv"
 )
 
