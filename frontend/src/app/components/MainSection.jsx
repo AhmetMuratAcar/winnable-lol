@@ -9,6 +9,16 @@ const MainSection = () => {
 		for (const [key, value] of formData.entries()) {
 			console.log(`${key}: ${value}`)
 		}
+
+		const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/game`, {
+			method: `POST`,
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				region: event.target.region.value, 
+				ign: event.target.ign.value
+			}),
+		});
+		const data = await res.json();
 	}
 
 	return (
