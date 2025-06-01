@@ -22,6 +22,7 @@ func (g *GameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Print("Received a request")
 	// Validate incoming JSON
 	var req RequestBody
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -42,5 +43,12 @@ func (g *GameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("\nReceived IGN: %s\nReceived region: %s", req.Username, req.Region)
 
-	// TODO: call Riot API client in internal/riot/client.go by passing req.
+	// Riot API calls
+	client := riot.NewClient()
+	client.GetMatchData()
+	// user, err := client.GetSummoner(req.Region, req.Username)
+	// if err != nil {
+	// 	http.Error(w, "could not fetch summoner: "+err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
 }
