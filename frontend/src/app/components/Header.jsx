@@ -23,7 +23,7 @@ const Header = () => {
   }, [showInfo]);
 
   return (
-    <header className="w-full flex items-center justify-between px-4 bg-(--contrast) h-14">
+    <header className="w-screen flex items-center justify-between px-4 bg-(--contrast) h-14">
       <div className='flex items-center h-full'>
         <button 
           onClick={() => location.reload()}
