@@ -44,7 +44,7 @@ const Header = () => {
           onClick={() => setShowInfo(!showInfo)}
         />
         {showInfo && (
-          <div className="absolute right-0 mt-2 w-64 p-4 bg-white text-gray-800 border border-gray-300 rounded shadow-lg">
+          <div className="z-50 absolute right-0 mt-2 w-64 p-4 bg-white text-gray-800 border border-gray-300 rounded shadow-lg">
             <p className="text-sm">
               Welcome to Winnable. Enter your Riot ID to generate a radar graph of your champion mastery               
               <br />

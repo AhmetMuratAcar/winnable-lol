@@ -30,14 +30,16 @@ const MainSection = () => {
 			id="MainSection"
 			className="flex flex-col flex-grow items-center justify-start px-4 py-6"
 		>
-			<Image
-				src="/images/logo.png"
-				alt="logo"
-				width={350}
-  				height={350}
-				className="w-[80%] max-w-[350px] m-10 sm:mt-20"
-				priority
-			/>
+			<div className="relative w-[80%] max-w-[350px] m-10 sm:mt-20 aspect-square">
+			  <Image
+			    src="/images/logo.png"
+			    alt="logo"
+			    fill
+			    style={{ objectFit: 'contain' }}
+			    sizes="(max-width: 640px) 80vw, 350px"
+			    priority
+			  />
+			</div>
 
 			<form 
 				onSubmit={onSubmit}
@@ -76,7 +78,7 @@ const MainSection = () => {
 					<span className="w-px h-6 bg-gray-500 mx-4"></span>
 
 					{/* Search Input */}
-					<div className="flex flex-col flex-grow">
+					<div className="flex flex-col flex-grow min-w-0">
 						<label className="text-xs text-white font-semibold mb-1">
 							Search
 						</label>
