@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/AhmetMuratAcar/winnable-lol/backend/internal/types"
 )
 
 type Client struct {
@@ -24,14 +26,17 @@ func NewClientWithHTTPClient(httpClient *http.Client) *Client {
 	}
 }
 
-func (c *Client) GetMatchData() error {
+func (c *Client) GetSummonerPUUID(req types.RequestBody) (puuid string, err error) {
+	return "", nil
+}
+
+func (c *Client) GetSummonerMastery(puuid string) error {
 	return nil
 }
 
-func (c *Client) GetSummoner(region, username string) error {
-	return nil
-}
-
+// func (c *Client) GetMatchData() error {
+// 	return nil
+// }
 // func (c *Client) getMatchID() error {
 // 	return nil
 // }

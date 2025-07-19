@@ -7,20 +7,18 @@ import (
 
 	"github.com/AhmetMuratAcar/winnable-lol/backend/internal/riot"
 	"github.com/AhmetMuratAcar/winnable-lol/backend/internal/types"
-
 )
 
-type GameHandler struct{}
+type MasteryHandler struct{}
 
-func (g *GameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", http.MethodPost)
-		http.Error(w, "405 Method Not Allowed: only POST is supported", http.StatusMethodNotAllowed)
+func (h *MasteryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.Header().Set("Allow", http.MethodGet)
+		http.Error(w, "405 Method Not Allowed: only GET is supported", http.StatusMethodNotAllowed)
 		return
 	}
 
-	log.Print("Received a request")
-	// Validate incoming JSON
+	log.Print("Received mastery request")
 	var req types.RequestBody
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid JSON request body", http.StatusBadRequest)
@@ -39,13 +37,19 @@ func (g *GameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("\nReceived IGN: %s\nReceived region: %s", req.Username, req.Region)
-
-	// Riot API calls
+	
 	client := riot.NewClient()
-	client.GetMatchData()
-	// user, err := client.GetSummoner(req.Region, req.Username)
-	// if err != nil {
-	// 	http.Error(w, "could not fetch summoner: "+err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
+	puuid, err := client.GetSummonerPUUID(req)
+	if err != nil {
+		http.Error(
+			w, 
+			"could not fetch summoner: "+err.Error(), 
+			http.StatusInternalServerError,
+		)
+		return
+	}
+	log.Printf("PUUID: %s", puuid)
+	// Call riot mastery handler
+
+	// Call mastery processor
 }

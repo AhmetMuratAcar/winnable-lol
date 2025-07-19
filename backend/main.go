@@ -32,7 +32,8 @@ func run() error {
 	// Handlers
 	mux := http.NewServeMux()
 	mux.Handle("/health", middleware.EnableCORS(&handlers.HealthHandler{}))
-	mux.Handle("/game", middleware.EnableCORS(&handlers.GameHandler{}))
+	mux.Handle("/mastery", middleware.EnableCORS(&handlers.MasteryHandler{}))
+	// mux.Handle("/game", middleware.EnableCORS(&handlers.GameHandler{}))
 
 	// Starting server
 	port := os.Getenv("PORT")
