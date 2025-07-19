@@ -1,24 +1,28 @@
 "use client"
 import Image from "next/image";
+import { splitByLastHash } from "../utils/stringUtils";
 
 const MainSection = () => {
 	async function onSubmit(event) {
 		event.preventDefault()
-
 		const formData = new FormData(event.currentTarget)
 		for (const [key, value] of formData.entries()) {
 			console.log(`${key}: ${value}`)
 		}
+
+		const [gameName, tagLine] = splitByLastHash(event.target.ign.value);
+		// TODO: map form region value to region tag
 
 		const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/mastery`, {
 			method: `POST`,
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
 				region: event.target.region.value, 
-				ign: event.target.ign.value
+				gameName: gameName,
+				tagLine: tagLine,
 			}),
 		});
-		const data = await res.json();
+		// const data = await res.json();
 	}
 
 	return (
