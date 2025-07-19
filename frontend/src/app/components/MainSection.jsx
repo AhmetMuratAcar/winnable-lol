@@ -10,7 +10,7 @@ const MainSection = () => {
 			console.log(`${key}: ${value}`)
 		}
 
-		const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/game`, {
+		const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/mastery`, {
 			method: `POST`,
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
