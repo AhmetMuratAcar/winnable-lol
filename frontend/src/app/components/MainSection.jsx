@@ -32,6 +32,7 @@ const MainSection = () => {
 		height={350}
 		alt="logo"
 		className="m-10"
+		priority
 		/>
 
 		<form 
@@ -82,10 +83,10 @@ const MainSection = () => {
 			</div>
 
 			<button
-			type="submit"
-			className="mt-4 px-6 py-2 rounded-md bg-[var(--contrast)] text-white font-bold hover:opacity-80 transition"
+				type="submit"
+				className="mt-4 px-6 py-2 rounded-md bg-[var(--pastel-red)] text-white font-bold hover:opacity-80 transition"
 			>
-			Winnable?
+				Winnable?
 			</button>
     	</form>
     </section>

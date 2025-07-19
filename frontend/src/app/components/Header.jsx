@@ -23,18 +23,18 @@ const Header = () => {
   }, [showInfo]);
 
   return (
-    <header className="w-full flex items-center justify-between px-4 bg-(--contrast) h-13">
-      <div>
+    <header className="w-full flex items-center justify-between px-4 bg-(--contrast) h-14">
+      <div className='flex items-center h-full'>
         <button 
           onClick={() => location.reload()}
           className="p-0 border-none bg-transparent cursor-pointer"
         >
           <Image
-            src="/images/lotad-icon.png"
+            src="/images/logo.png"
             width={45}
             height={45}
-            alt="lotad"
-            className="rounded-full"
+            alt="logo"
+            className='block'
           />
         </button>
       </div>
@@ -46,7 +46,7 @@ const Header = () => {
         {showInfo && (
           <div className="absolute right-0 mt-2 w-64 p-4 bg-white text-gray-800 border border-gray-300 rounded shadow-lg">
             <p className="text-sm">
-              Welcome to Winnable. Enter your Riot ID to check the win probability prediction of your current Leauge of Legends ranked game. 
+              Welcome to Winnable. Enter your Riot ID to generate a radar graph of your champion mastery               
               <br />
               <br />
               Winnable was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.

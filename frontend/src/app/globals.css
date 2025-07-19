@@ -5,8 +5,9 @@
   /* --background: #28344E; */
   --background: #1c1c1f; /* dark gray */
   --foreground: #FFFFFF; /* white text */
-  --contrast: #c31b3c; /* dark pastel red */
-  --chart: #ff2056 /* rose-500 red */
+  --contrast: #2A2A2E; /* cool gray */
+  --pastel-red: #c31b3c; /* dark pastel red */
+  --chart: #ff2056; /* rose-500 red */
 }
 
 @theme inline {
@@ -20,4 +21,19 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+img {
+  height: auto;
+  width: auto;
+}
+
+/* Stops the autofill options from removing CSS of the form */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px #31313c inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  transition: background-color 5000s ease-in-out 0s;
 }

@@ -4,14 +4,13 @@ const Footer = () => {
 			<footer className="bg-(--contrast) h-12 items-center justify-center text-center flex">
 				<div>
 					<p>
-						Check it out on 
+						Check it out on{' '}
 						<a 
 							href="https://github.com/AhmetMuratAcar/winnable-lol"
 							target='_blank'
-							className="text-blue-500"
-						> Github
+							className="text-(--pastel-red) hover:underline"
+						>Github
 						</a>
-						!
 					</p>
 				</div>
 			</footer>
