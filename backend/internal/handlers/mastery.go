@@ -12,13 +12,13 @@ import (
 type MasteryHandler struct{}
 
 func (h *MasteryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.Header().Set("Allow", http.MethodGet)
-		http.Error(w, "405 Method Not Allowed: only GET is supported", http.StatusMethodNotAllowed)
+	if r.Method != http.MethodPost {
+		w.Header().Set("Allow", http.MethodPost)
+		http.Error(w, "405 Method Not Allowed: only POST is supported", http.StatusMethodNotAllowed)
 		return
 	}
 
-	log.Print("Received mastery request")
+	log.Println("Received mastery request")
 	var req types.RequestBody
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid JSON request body", http.StatusBadRequest)

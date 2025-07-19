@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/AhmetMuratAcar/winnable-lol/backend/internal/riot"
+	// "github.com/AhmetMuratAcar/winnable-lol/backend/internal/riot"
 	"github.com/AhmetMuratAcar/winnable-lol/backend/internal/types"
 
 )
@@ -41,8 +41,8 @@ func (g *GameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("\nReceived IGN: %s\nReceived region: %s", req.Username, req.Region)
 
 	// Riot API calls
-	client := riot.NewClient()
-	client.GetMatchData()
+	// client := riot.NewClient()
+	// client.GetMatchData()
 	// user, err := client.GetSummoner(req.Region, req.Username)
 	// if err != nil {
 	// 	http.Error(w, "could not fetch summoner: "+err.Error(), http.StatusInternalServerError)
