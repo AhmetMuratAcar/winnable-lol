@@ -6,6 +6,7 @@
   --background: #1c1c1f; /* dark gray */
   --foreground: #FFFFFF; /* white text */
   --contrast: #c31b3c; /* dark pastel red */
+  --chart: #ff2056 /* rose-500 red */
 }
 
 @theme inline {
