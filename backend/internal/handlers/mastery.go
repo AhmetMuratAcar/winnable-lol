@@ -26,8 +26,13 @@ func (h *MasteryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	if req.Username == "" {
-		http.Error(w, "IGN is required", http.StatusBadRequest)
+	if req.GameName == "" {
+		http.Error(w, "GameName is required", http.StatusBadRequest)
+		return
+	}
+	
+	if req.TagLine == "" {
+		http.Error(w, "Tagline is required", http.StatusBadRequest)
 		return
 	}
 
@@ -36,7 +41,7 @@ func (h *MasteryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("\nReceived IGN: %s\nReceived region: %s", req.Username, req.Region)
+	log.Printf("\nReceived GameName: %s Tagline: %s Region: %s", req.GameName, req.TagLine, req.Region)
 	
 	client := riot.NewClient()
 	puuid, err := client.GetSummonerPUUID(req)

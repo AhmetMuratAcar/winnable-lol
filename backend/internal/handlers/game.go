@@ -28,18 +28,18 @@ func (g *GameHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	if req.Username == "" {
-		http.Error(w, "IGN is required", http.StatusBadRequest)
-		return
-	}
-
-	if req.Region == "" {
-		http.Error(w, "Region is required", http.StatusBadRequest)
-		return
-	}
-
-	log.Printf("\nReceived IGN: %s\nReceived region: %s", req.Username, req.Region)
-
+// 	if req.Username == "" {
+// 		http.Error(w, "IGN is required", http.StatusBadRequest)
+// 		return
+// 	}
+// 
+// 	if req.Region == "" {
+// 		http.Error(w, "Region is required", http.StatusBadRequest)
+// 		return
+// 	}
+// 
+// 	log.Printf("\nReceived IGN: %s\nReceived region: %s", req.Username, req.Region)
+// 
 	// Riot API calls
 	// client := riot.NewClient()
 	// client.GetMatchData()
