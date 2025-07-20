@@ -32,11 +32,12 @@ const MainSection = () => {
 			});
 
 			if (!res.ok) {
-				if (res.status === 404) {
-					setErrorMessage('Summoner does not exist')
-				} else {
-					setErrorMessage(`Server error: ${res.status}`)
-				}
+				const msg = 
+					res.status === 404 
+					? 'Summoner does not exist' 
+					: `Server error: ${res.status}`
+				
+				setErrorMessage(msg)
 				setIsSubmitting(false)
 				return
 			}
