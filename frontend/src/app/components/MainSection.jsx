@@ -30,7 +30,7 @@ const MainSection = () => {
 			id="MainSection"
 			className="flex flex-col flex-grow items-center justify-start px-4 py-6"
 		>
-			<div className="relative w-[80%] max-w-[350px] m-10 sm:mt-20 aspect-square">
+			<div className="relative w-[80%] max-w-[350px] m-10 mt-0 aspect-square">
 			  <Image
 			    src="/images/logo.png"
 			    alt="logo"
