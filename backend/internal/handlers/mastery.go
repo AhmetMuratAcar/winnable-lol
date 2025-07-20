@@ -49,7 +49,7 @@ func (h *MasteryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(
 			w, 
 			"could not fetch summoner: "+err.Error(), 
-			http.StatusInternalServerError,
+			http.StatusNotFound,
 		)
 		return
 	}

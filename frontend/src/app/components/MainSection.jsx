@@ -32,12 +32,17 @@ const MainSection = () => {
 			});
 
 			if (!res.ok) {
-				setErrorMessage(`Server error: ${res.status}`)
+				if (res.status === 404) {
+					setErrorMessage('Summoner does not exist')
+				} else {
+					setErrorMessage(`Server error: ${res.status}`)
+				}
 				setIsSubmitting(false)
 				return
 			}
 
 			// const data = await res.json();
+			setIsSubmitting(false) // for now
 		} catch (err) {
 			if (!navigator.onLine) {
 				setErrorMessage('You appear to be offline, Please check your internet connection')
