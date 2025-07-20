@@ -2,7 +2,6 @@
 import { useState } from "react";
 import Image from "next/image";
 import { splitByLastHash } from "../utils/stringUtils";
-import Error from "next/error";
 
 const MainSection = () => {
 	const [isSubmitting, setIsSubmitting] = useState(false)
@@ -74,12 +73,17 @@ const MainSection = () => {
 				
 					{/* Region Dropdown */}
 					<div className="w-24 sm:w-auto ml-4 flex flex-col shrink-0">
-						<label className="text-xs text-white font-semibold mb-1 ml-1">
+						<label 
+							htmlFor="region" 
+							className="text-xs text-white font-semibold mb-1 ml-1"
+						>
 							Region
 						</label>
 						<select 
-							name="region" 
+							name="region"
+							id="region"
 							className="bg-transparent text-gray-400 outline-none"
+							autoComplete="off"
 						>
 							<option>North America</option>
 							<option>Europe West</option>
@@ -104,12 +108,16 @@ const MainSection = () => {
 
 					{/* Search Input */}
 					<div className="flex flex-col flex-grow min-w-0">
-						<label className="text-xs text-white font-semibold mb-1">
+						<label 
+							htmlFor="ign" 
+							className="text-xs text-white font-semibold mb-1"
+						>
 							Search
 						</label>
 						<input
 							type="text"
 							name="ign"
+							id="ign"
 							placeholder="IGN + #Tag"
 							className="bg-transparent text-white outline-none placeholder-gray-400"
 							required
