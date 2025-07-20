@@ -1,10 +1,18 @@
 "use client"
+import { useState } from "react";
 import Image from "next/image";
 import { splitByLastHash } from "../utils/stringUtils";
+import Error from "next/error";
 
 const MainSection = () => {
+	const [isSubmitting, setIsSubmitting] = useState(false)
+	const [errorMessage, setErrorMessage] = useState('')
+	
 	async function onSubmit(event) {
 		event.preventDefault()
+		setIsSubmitting(true)
+		setErrorMessage('')
+
 		const formData = new FormData(event.currentTarget)
 		for (const [key, value] of formData.entries()) {
 			console.log(`${key}: ${value}`)
@@ -12,17 +20,34 @@ const MainSection = () => {
 
 		const [gameName, tagLine] = splitByLastHash(event.target.ign.value);
 		// TODO: map form region value to region tag
+		
+		try {
+			const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/mastery`, {
+				method: `POST`,
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					region: event.target.region.value, 
+					gameName: gameName,
+					tagLine: tagLine,
+				}),
+			});
 
-		const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/mastery`, {
-			method: `POST`,
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				region: event.target.region.value, 
-				gameName: gameName,
-				tagLine: tagLine,
-			}),
-		});
-		// const data = await res.json();
+			if (!res.ok) {
+				setErrorMessage(`Server error: ${res.status}`)
+				setIsSubmitting(false)
+				return
+			}
+
+			// const data = await res.json();
+		} catch (err) {
+			if (!navigator.onLine) {
+				setErrorMessage('You appear to be offline, Please check your internet connection')
+			} else  { 
+				setErrorMessage('Could not reach our servers. Please try again later.')
+			} 
+
+			setIsSubmitting(false)
+		}
 	}
 
 	return (
@@ -95,9 +120,14 @@ const MainSection = () => {
 				<button
 					type="submit"
 					className="mt-4 px-6 py-2 rounded-md bg-[var(--pastel-red)] text-white font-bold hover:opacity-80 transition"
+					disabled={isSubmitting}
 				>
-					Winnable?
+					{isSubmitting ? 'Submitting…' : 'Winnable?'}
 				</button>
+
+				{errorMessage && (
+					<p className="text-[var(--pastel-red)] text-sm mt-2">{errorMessage}</p>
+				)}
 			</form>
 		</section>
   );
