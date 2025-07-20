@@ -17,7 +17,9 @@ const MainSection = () => {
 			console.log(`${key}: ${value}`)
 		}
 
+		// TODO: validate the form inputs
 		const [gameName, tagLine] = splitByLastHash(event.target.ign.value);
+		// TODO: further format by stripping spaces from ends etc.
 		// TODO: map form region value to region tag
 		
 		try {
@@ -38,19 +40,17 @@ const MainSection = () => {
 					: `Server error: ${res.status}`
 				
 				setErrorMessage(msg)
-				setIsSubmitting(false)
 				return
 			}
 
 			// const data = await res.json();
-			setIsSubmitting(false) // for now
 		} catch (err) {
 			if (!navigator.onLine) {
 				setErrorMessage('You appear to be offline, Please check your internet connection')
 			} else  { 
 				setErrorMessage('Could not reach our servers. Please try again later.')
-			} 
-
+			}
+		} finally {
 			setIsSubmitting(false)
 		}
 	}
