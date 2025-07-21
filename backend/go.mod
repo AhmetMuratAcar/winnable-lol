@@ -1,4 +1,4 @@
-module github.com/AhmetMuratAcar/winnable-lol/backend
+module winnable
 
 go 1.23.4
 
