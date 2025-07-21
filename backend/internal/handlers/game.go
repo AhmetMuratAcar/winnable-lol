@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	// "github.com/AhmetMuratAcar/winnable-lol/backend/internal/riot"
-	"github.com/AhmetMuratAcar/winnable-lol/backend/internal/types"
+	"winnable/internal/types"
 
 )
 
