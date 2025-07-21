@@ -5,8 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/AhmetMuratAcar/winnable-lol/backend/internal/riot"
-	"github.com/AhmetMuratAcar/winnable-lol/backend/internal/types"
+	"winnable/internal/riot"
+	"winnable/internal/types"
+	"winnable/internal/utils"
 )
 
 type MasteryHandler struct{}
@@ -25,36 +26,38 @@ func (h *MasteryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-
-	if req.GameName == "" {
-		http.Error(w, "GameName is required", http.StatusBadRequest)
-		return
-	}
-	
-	if req.TagLine == "" {
-		http.Error(w, "Tagline is required", http.StatusBadRequest)
-		return
-	}
-
-	if req.Region == "" {
-		http.Error(w, "Region is required", http.StatusBadRequest)
-		return
-	}
-
 	log.Printf("\nReceived GameName: %s Tagline: %s Region: %s", req.GameName, req.TagLine, req.Region)
 	
+	// PUUID calls
 	client := riot.NewClient()
-	puuid, err := client.GetSummonerPUUID(req)
+	isUserCached, puuid, err := utils.GetPUIID(req)
 	if err != nil {
-		http.Error(
-			w, 
-			"could not fetch summoner: "+err.Error(), 
-			http.StatusNotFound,
+		log.Printf(
+			"Error querying DB for user's PUUID for GameName: %s Tagline: %s\nerr: %v\n", 
+			req.GameName, 
+			req.TagLine,
+			err,
 		)
-		return
+		// don't return and default back to riot API call for PUUID
+		isUserCached = false
 	}
-	log.Printf("PUUID: %s", puuid)
-	// Call riot mastery handler
 
+	if !isUserCached {
+		tmp, err := client.GetSummonerPUUID(req)
+		if err != nil {
+			http.Error(
+				w, 
+				"could not fetch summoner: "+err.Error(), 
+				http.StatusNotFound,
+			)
+			return
+		}
+		puuid = tmp
+	}
+
+	log.Printf("PUUID: %s", puuid)
+	// Mastery calls
+	// DB Check for user mastery info
+	// Riot mastery API
 	// Call mastery processor
 }

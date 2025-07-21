@@ -7,9 +7,10 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
-	"github.com/AhmetMuratAcar/winnable-lol/backend/internal/types"
+	"winnable/internal/types"
 )
 
 type RiotClient struct {
@@ -43,13 +44,13 @@ func (c *RiotClient) GetSummonerPUUID(reqBody types.RequestBody) (puuid string, 
 
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
-		return "", fmt.Errorf("error creating request: %w", err)
+		return "", fmt.Errorf("error creating GetSummonerPUUID request: %w", err)
 	}
 	req.Header.Set("X-Riot-Token", c.apiKey)
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("request failed: %w", err)
+		return "", fmt.Errorf("GetSummonerPUUID API request failed: %w", err)
 	}
 	defer res.Body.Close()
 
@@ -70,13 +71,36 @@ func (c *RiotClient) GetSummonerPUUID(reqBody types.RequestBody) (puuid string, 
 	return result.Puuid, nil
 }
 
-func (c *RiotClient) GetSummonerMastery(puuid string) error {
-	return nil
-}
+func (c *RiotClient) GetSummonerMastery(region, puuid string) (string, error) {
+	region = strings.ToLower(region)
+	baseEndpoint := "https://" + region + ".api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid"
+	endpoint := fmt.Sprintf(
+		"%s/%s",
+		baseEndpoint,
+		puuid,
+	)
+	fmt.Printf("url: %s", endpoint)
 
-// func (c *Client) GetMatchData() error {
-// 	return nil
-// }
-// func (c *Client) getMatchID() error {
-// 	return nil
-// }
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return "", fmt.Errorf("error creating GetSummonerMastery request: %w", err)
+	}
+	req.Header.Set("X-Riot-Token", c.apiKey)
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("GetSummonerMastery API request failed: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(res.Body)
+		return "", fmt.Errorf(
+				"non-200 response: %s\n%s", 
+				res.Status, 
+				string(bodyBytes),
+			)
+	}
+
+	return "", nil
+}
