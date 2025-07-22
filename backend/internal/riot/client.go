@@ -71,7 +71,7 @@ func (c *RiotClient) GetSummonerPUUID(reqBody types.RequestBody) (puuid string, 
 	return result.Puuid, nil
 }
 
-func (c *RiotClient) GetSummonerMastery(region, puuid string) (string, error) {
+func (c *RiotClient) GetSummonerMastery(region, puuid string) ([]types.ChampionMastery, error) {
 	region = strings.ToLower(region)
 	baseEndpoint := "https://" + region + ".api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid"
 	endpoint := fmt.Sprintf(
@@ -79,28 +79,32 @@ func (c *RiotClient) GetSummonerMastery(region, puuid string) (string, error) {
 		baseEndpoint,
 		puuid,
 	)
-	fmt.Printf("url: %s", endpoint)
 
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
-		return "", fmt.Errorf("error creating GetSummonerMastery request: %w", err)
+		return nil, fmt.Errorf("error creating GetSummonerMastery request: %w", err)
 	}
 	req.Header.Set("X-Riot-Token", c.apiKey)
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("GetSummonerMastery API request failed: %w", err)
+		return nil, fmt.Errorf("GetSummonerMastery API request failed: %w", err)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(res.Body)
-		return "", fmt.Errorf(
+		return nil, fmt.Errorf(
 				"non-200 response: %s\n%s", 
 				res.Status, 
 				string(bodyBytes),
 			)
 	}
 
-	return "", nil
+	var championMasteries []types.ChampionMastery
+	if err := json.NewDecoder(res.Body).Decode(&championMasteries); err != nil {
+		return nil, fmt.Errorf("error decoding JSON: %w", err)
+	}
+
+	return championMasteries, nil
 }

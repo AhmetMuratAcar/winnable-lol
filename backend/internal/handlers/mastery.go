@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -27,14 +28,14 @@ func (h *MasteryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 	log.Printf("\nReceived GameName: %s Tagline: %s Region: %s", req.GameName, req.TagLine, req.Region)
-	
+
 	// PUUID calls
 	client := riot.NewClient()
 	isUserCached, puuid, err := utils.GetPUIID(req)
 	if err != nil {
 		log.Printf(
-			"Error querying DB for user's PUUID for GameName: %s Tagline: %s\nerr: %v\n", 
-			req.GameName, 
+			"Error querying DB for user's PUUID for GameName: %s Tagline: %s\nerr: %v\n",
+			req.GameName,
 			req.TagLine,
 			err,
 		)
@@ -46,8 +47,8 @@ func (h *MasteryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		tmp, err := client.GetSummonerPUUID(req)
 		if err != nil {
 			http.Error(
-				w, 
-				"could not fetch summoner: "+err.Error(), 
+				w,
+				"could not fetch summoner: "+err.Error(),
 				http.StatusNotFound,
 			)
 			return
@@ -56,8 +57,39 @@ func (h *MasteryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("PUUID: %s", puuid)
+
 	// Mastery calls
-	// DB Check for user mastery info
-	// Riot mastery API
+	isMasteryOutdated := true
+	var championMasteries []types.ChampionMastery
+	if isUserCached {
+		// Check DB for last mastery fetch timestamp
+		// If under 24 Hours, fetch from DB and set isMasteryOutdated to false
+	}
+	
+	if isMasteryOutdated {
+		// TODO: REMOVE HARD CODED REGION AFTER FRONTEND REGION MAPPING IS FINISHED
+		tmp, err := client.GetSummonerMastery("na1", puuid)
+		if err != nil {
+			http.Error(
+				w,
+				"could not fetch summoner's masteries: "+err.Error(),
+				http.StatusNotFound,
+			)
+			return
+		}
+		championMasteries = tmp
+	}
+
+	if len(championMasteries) == 0 {
+		// User hasn't played any games
+		// Return an empty response
+	}
+
+	// Writing to file for now
+	err = utils.WriteMasteryToFile(championMasteries, req.GameName+req.TagLine)
+	if err != nil {
+		fmt.Println("we fucked up gang")
+	}
+
 	// Call mastery processor
 }
