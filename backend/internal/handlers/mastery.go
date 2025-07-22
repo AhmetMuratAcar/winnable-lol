@@ -44,7 +44,7 @@ func (h *MasteryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !isUserCached {
-		tmp, err := client.GetSummonerPUUID(req)
+		puuid, err = client.GetSummonerPUUID(req)
 		if err != nil {
 			http.Error(
 				w,
@@ -53,7 +53,6 @@ func (h *MasteryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			)
 			return
 		}
-		puuid = tmp
 	}
 
 	log.Printf("PUUID: %s", puuid)
@@ -65,10 +64,10 @@ func (h *MasteryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// Check DB for last mastery fetch timestamp
 		// If under 24 Hours, fetch from DB and set isMasteryOutdated to false
 	}
-	
+
 	if isMasteryOutdated {
 		// TODO: REMOVE HARD CODED REGION AFTER FRONTEND REGION MAPPING IS FINISHED
-		tmp, err := client.GetSummonerMastery("na1", puuid)
+		championMasteries, err = client.GetSummonerMastery("na1", puuid)
 		if err != nil {
 			http.Error(
 				w,
@@ -77,7 +76,6 @@ func (h *MasteryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			)
 			return
 		}
-		championMasteries = tmp
 	}
 
 	if len(championMasteries) == 0 {
