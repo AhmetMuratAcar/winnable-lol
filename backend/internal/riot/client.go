@@ -34,6 +34,7 @@ func NewClientWithHTTPClient(httpClient *http.Client) *RiotClient {
 }
 
 func (c *RiotClient) GetSummonerPUUID(reqBody types.RequestBody) (puuid string, err error) {
+	// TODO: actually route to nearest server instead of defaulting all to americas
 	baseEndpoint := "https://americas." + c.baseURL + "riot/account/v1/accounts/by-riot-id"
 	endpoint := fmt.Sprintf(
 		"%s/%s/%s",

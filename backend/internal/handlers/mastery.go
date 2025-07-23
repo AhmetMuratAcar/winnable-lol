@@ -66,8 +66,7 @@ func (h *MasteryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if isMasteryOutdated {
-		// TODO: REMOVE HARD CODED REGION AFTER FRONTEND REGION MAPPING IS FINISHED
-		championMasteries, err = client.GetSummonerMastery("na1", puuid)
+		championMasteries, err = client.GetSummonerMastery(req.Region, puuid)
 		if err != nil {
 			http.Error(
 				w,

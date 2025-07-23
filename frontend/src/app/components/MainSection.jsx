@@ -1,7 +1,7 @@
 "use client"
 import { useState } from "react";
 import Image from "next/image";
-import { splitByLastHash } from "../utils/stringUtils";
+import { idValidation } from "../utils/idValidation";
 
 const MainSection = () => {
 	const [isSubmitting, setIsSubmitting] = useState(false)
@@ -17,19 +17,26 @@ const MainSection = () => {
 			console.log(`${key}: ${value}`)
 		}
 
-		// TODO: validate the form inputs
-		const [gameName, tagLine] = splitByLastHash(event.target.ign.value);
-		// TODO: further format by stripping spaces from ends etc.
-		// TODO: map form region value to region tag
+		const validatedID = idValidation({
+			region: event.target.region.value,
+			riotID: event.target.ign.value
+		})
+
+		if (!validatedID.isValid) {
+			const msg = 'Invalid riotID'
+			setErrorMessage(msg)
+			setIsSubmitting(false)
+			return
+		}
 		
 		try {
 			const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/mastery`, {
 				method: `POST`,
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					region: event.target.region.value, 
-					gameName: gameName,
-					tagLine: tagLine,
+					region: validatedID.region,
+					gameName: validatedID.gameName,
+					tagLine: validatedID.tagLine,
 				}),
 			});
 
