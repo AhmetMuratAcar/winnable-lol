@@ -89,5 +89,23 @@ func (h *MasteryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("we fucked up gang")
 	}
 
-	// Call mastery processor
+	graphData, err := utils.ProcessMasteryData(championMasteries)
+	if err != nil {
+		http.Error(
+			w,
+			"could not generate radar graph: "+err.Error(),
+			http.StatusInternalServerError,
+		)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(graphData); err != nil {
+		log.Printf("failed to encode graph data: %v", err)
+		http.Error(
+			w,
+			"internal server error",
+			http.StatusInternalServerError,
+		)
+		return
+	}
 }
