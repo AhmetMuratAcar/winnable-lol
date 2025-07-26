@@ -1,9 +1,11 @@
 "use client"
 import { useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { idValidation } from "../utils/idValidation";
 
 const MainSection = () => {
+	const router = useRouter()
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const [errorMessage, setErrorMessage] = useState('')
 	
@@ -11,6 +13,12 @@ const MainSection = () => {
 		event.preventDefault()
 		setIsSubmitting(true)
 		setErrorMessage('')
+
+		if (!navigator.onLine) {
+			setErrorMessage('You appear to be offline, Please check your internet connection')
+			setIsSubmitting(false)
+			return
+		}
 
 		const formData = new FormData(event.currentTarget)
 		for (const [key, value] of formData.entries()) {
@@ -28,38 +36,11 @@ const MainSection = () => {
 			setIsSubmitting(false)
 			return
 		}
-		
-		try {
-			const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/mastery`, {
-				method: `POST`,
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					region: validatedID.region,
-					gameName: validatedID.gameName,
-					tagLine: validatedID.tagLine,
-				}),
-			});
 
-			if (!res.ok) {
-				const msg = 
-					res.status === 404 
-					? 'Summoner does not exist' 
-					: `Server error: ${res.status}`
-				
-				setErrorMessage(msg)
-				return
-			}
-
-			// const data = await res.json();
-		} catch (err) {
-			if (!navigator.onLine) {
-				setErrorMessage('You appear to be offline, Please check your internet connection')
-			} else  { 
-				setErrorMessage('Could not reach our servers. Please try again later.')
-			}
-		} finally {
-			setIsSubmitting(false)
-		}
+		const slug = `${encodeURIComponent(validatedID.gameName)}-${encodeURIComponent(validatedID.tagLine)}`
+		router.push(`lol/summoners/${validatedID.region}/${slug}`)
+		setIsSubmitting(false)
+		return
 	}
 
 	return (
