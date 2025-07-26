@@ -52,13 +52,13 @@ const TAGLINE_TO_SERVER = {
   "VN2":  "VN2"
 };
 
-export function regionTagToServerCode([ regionTag ]) {
+export function regionTagToServerCode(regionTag) {
   return TAGLINE_TO_SERVER[regionTag]
 }
 
 export function idValidation({ region, riotID }) {
   const regionTag = REGION_TAGLINE_MAP[region] || null;
-  if (typeof riotID !== "string" || !result.regionTag) {
+  if (typeof riotID !== "string" || !regionTag) {
     return result;
   }
 
