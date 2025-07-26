@@ -2,8 +2,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaQuestionCircle } from 'react-icons/fa';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 const Header = () => {
+  const router = useRouter()
   const [showInfo, setShowInfo] = useState(false);
   const infoRef = useRef(null);
 
@@ -26,7 +28,7 @@ const Header = () => {
     <header className="w-screen flex items-center justify-between px-4 bg-(--contrast) h-14">
       <div className='flex items-center h-full'>
         <button 
-          onClick={() => location.reload()}
+          onClick={() => router.push('/')}
           className="p-0 border-none bg-transparent cursor-pointer"
         >
           <Image
