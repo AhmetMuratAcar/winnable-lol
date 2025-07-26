@@ -34,18 +34,40 @@ const SERVER_CODE_MAP = {
   "Vietnam":               "VN2"
 };
 
+const TAGLINE_TO_SERVER = {
+  "NA1":  "NA1",
+  "EUW":  "EUW1",
+  "EUNE": "EUN1",
+  "ME1":  "ME1",
+  "OC":   "OC1",
+  "LAS":  "LA1",
+  "LAN":  "LA2",
+  "SG2":  "SG2",
+  "KR1":  "KR",
+  "JP1":  "JP1",
+  "BR1":  "BR1",
+  "RU1":  "RU",
+  "TR1":  "TR1",
+  "TW2":  "TW2",
+  "VN2":  "VN2"
+};
+
+export function regionTagToServerCode([ regionTag ]) {
+  return TAGLINE_TO_SERVER[regionTag]
+}
+
 export function idValidation({ region, riotID }) {
+  const regionTag = REGION_TAGLINE_MAP[region] || null;
+  if (typeof riotID !== "string" || !result.regionTag) {
+    return result;
+  }
+
   const result = {
     gameName: null,
     tagLine:  null,
-    region:   SERVER_CODE_MAP[region],
+    region: regionTag,
     isValid:  false
   };
-  
-  const regionTag = REGION_TAGLINE_MAP[region] || null;
-  if (typeof riotID !== "string" || !regionTag) {
-    return result;
-  }
 
   const parts = riotID.trim().split("#");
   if (parts.length > 2) {
