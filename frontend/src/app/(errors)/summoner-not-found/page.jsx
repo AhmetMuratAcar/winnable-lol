@@ -1,5 +1,6 @@
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
+import GoHomeButton from "@/app/components/GoHomeButton";
 
 export default function SummonerNotFoundPage() {
     return (
@@ -10,6 +11,7 @@ export default function SummonerNotFoundPage() {
                 className="flex flex-col flex-grow items-center justify-start px-4 py-6"
             >
                 <h1 className="text-3xl font-bold">Summoner Not Found</h1>
+                <GoHomeButton />
             </section>
             <Footer />
         </main>
