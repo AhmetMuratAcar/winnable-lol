@@ -3,8 +3,17 @@ import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import GoHomeButton from "@/app/components/GoHomeButton";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function customErrorPage() {
+export default function CustomErrorPageWrapper() {
+    return (
+        <Suspense fallback={<LoadingFallback />}>
+            <CustomErrorPage />
+        </Suspense>
+    )
+}
+
+function CustomErrorPage() {
     const searchParams = useSearchParams()
     const status = searchParams.get('status') || '500'
 
@@ -22,5 +31,13 @@ export default function customErrorPage() {
             </section>
             <Footer />
         </main>
-    );
+    )
+}
+
+function LoadingFallback() {
+    return (
+        <main className="min-h-svh flex flex-col items-center justify-center">
+            <p className="text-gray-500">Loading error page...</p>
+        </main>
+    )
 }
