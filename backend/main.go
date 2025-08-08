@@ -53,16 +53,14 @@ func run() error {
 	if err := pool.Ping(ctx); err != nil {
 		return fmt.Errorf("db ping failed: %w", err)
 	}
-	
+
 	// Configure CORS
 	middleware.ConfigureAllowedOrigins(os.Getenv("ENV"))
 
 	// Handlers
 	mux := http.NewServeMux()
 	mux.Handle("/health", middleware.EnableCORS(&handlers.HealthHandler{}))
-	mux.Handle("lol/profile", middleware.EnableCORS(handlers.NewLoLProfileHandler(pool)))
-	// mux.Handle("/mastery", middleware.EnableCORS(&handlers.MasteryHandler{}))
-	// mux.Handle("/game", middleware.EnableCORS(&handlers.GameHandler{}))
+	mux.Handle("/lol/profile", middleware.EnableCORS(handlers.NewLoLProfileHandler(pool)))
 
 	// Starting server
 	port := os.Getenv("PORT")

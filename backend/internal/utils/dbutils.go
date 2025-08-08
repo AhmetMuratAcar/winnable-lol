@@ -1,8 +1,28 @@
 package utils
 
-import "winnable/internal/types"
+import (
+	"context"
+	"winnable/internal/types"
 
-func GetPUIID(userInfo types.RequestBody) (bool, string, error) {
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+// GetPUUID queries users table for given user's PUUID
+// 
+// Example:
+// 	cacheCheck, err := utils.GetPUUID(ctx, h.pool, req)
+func GetPUUID(ctx context.Context, pool *pgxpool.Pool, userInfo types.RequestBody) (types.PUUIDCacheCheck, error) {
 	// TODO: actually query DB for user PUUID
-	return false, "", nil
+	var res types.PUUIDCacheCheck
+	return res, nil
+}
+
+// GetMasteries queries masteries table for given user's champion masteries
+// 
+// Example:
+// 	championMasteries, err := utils.GetMasteries(ctx, h.pool, PUUID)
+func GetMasteries(ctx context.Context, pool *pgxpool.Pool, PUUID string) ([]types.ChampionMastery, error) {
+	// TODO: actually query DB for user masteries
+	var championMasteries []types.ChampionMastery
+	return championMasteries, nil
 }
