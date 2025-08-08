@@ -1,12 +1,17 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"winnable/internal/handlers"
 	"winnable/internal/middleware"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
 
@@ -26,13 +31,37 @@ func main() {
 }
 
 func run() error {
+	// DB pool setup
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		return fmt.Errorf("DATABASE_URL not set")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	pool, err := pgxpool.New(ctx, dsn)
+	if err != nil {
+		return fmt.Errorf("pxpool.New: %w", err)
+	}
+	defer pool.Close()
+
+	// Config tuning
+	pool.Config().MaxConns = 10
+	pool.Config().MaxConnLifetime = 30 * time.Minute
+
+	if err := pool.Ping(ctx); err != nil {
+		return fmt.Errorf("db ping failed: %w", err)
+	}
+	
 	// Configure CORS
 	middleware.ConfigureAllowedOrigins(os.Getenv("ENV"))
 
 	// Handlers
 	mux := http.NewServeMux()
 	mux.Handle("/health", middleware.EnableCORS(&handlers.HealthHandler{}))
-	mux.Handle("/mastery", middleware.EnableCORS(&handlers.MasteryHandler{}))
+	mux.Handle("lol/profile", middleware.EnableCORS(handlers.NewLoLProfileHandler(pool)))
+	// mux.Handle("/mastery", middleware.EnableCORS(&handlers.MasteryHandler{}))
 	// mux.Handle("/game", middleware.EnableCORS(&handlers.GameHandler{}))
 
 	// Starting server
