@@ -9,8 +9,8 @@ import (
 	"winnable/internal/types"
 )
 
-func WriteMasteryToFile(data []types.ChampionMastery, riotID string) error {
-	path := fmt.Sprintf("./devfiles/%sChampionMasteries.JSON", riotID)
+func WriteProfileToFile(data types.LeagueProfilePage, riotID string) error {
+	path := fmt.Sprintf("./devfiles/%s_LoLProfile.JSON", riotID)
 	f, err := os.Create(path)
 	if err != nil {
 		log.Fatalf("failed to create file: %v", err)
@@ -25,6 +25,6 @@ func WriteMasteryToFile(data []types.ChampionMastery, riotID string) error {
 		return err
 	}
 
-	log.Printf("wrote %d entries to %s", len(data), path)
+	log.Printf("wrote %s profile to %s", riotID, path)
 	return nil
 }
