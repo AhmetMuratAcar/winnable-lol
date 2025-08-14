@@ -69,11 +69,12 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		PUUID = cacheCheck.PUUID
 	}
+	log.Print("PUUID fetch successful")
 
 	userProfile := types.LeagueProfilePage{
 		GameName: req.GameName,
-		TagLine: req.TagLine,
-		Region: req.Region,
+		TagLine:  req.TagLine,
+		Region:   req.Region,
 	}
 
 	// Mastery Calls
@@ -97,9 +98,97 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			)
 		}
 	}
+	log.Print("Mastery fetch successful")
 	userProfile.MasteryData.ChampionMasteries = championMasteries
 
 	// Past matches calls
+	startIndex := 0
+	var matchIDs []string
+	matchIDs, err = client.GetSummonerMatchIDs(PUUID, startIndex)
+	if err != nil {
+		log.Printf(
+			"Error requesting past match IDs: \nPUUID%s\nError: %v",
+			PUUID,
+			err,
+		)
+	}
+	log.Print("MatchIDs fetch successful")
+	
+	matchDataMap := make(map[string]*types.LeagueMatch)
+	if len(matchIDs) != 0 {
+		err = utils.GetMatchDataByIDs(ctx, h.pool, matchIDs, &matchDataMap)
+		if err != nil {
+			log.Printf(
+				"Error populating matchDataMap PUUID: %s\nmatchIDs: %s",
+				PUUID,
+				matchIDs,
+			)
+			userProfile.MatchData = nil
+		}
+	} else {
+		userProfile.MatchData = nil
+	}
+
+	missing := make([]string, 0, len(matchIDs))
+	for _, id := range matchIDs {
+		if m, ok := matchDataMap[id]; !ok || m == nil {
+			missing = append(missing, id)
+		}
+	}
+
+	toAdd := make([]types.LeagueMatch, 0, len(missing))
+	for _, id := range missing {
+		matchData, err := client.GetMatchData(id)
+		if err != nil {
+			log.Printf(
+				"Error fetching matchID %s\nError: %v",
+				id,
+				err,
+			)
+			continue
+		}
+
+		matchDataMap[id] = &matchData
+		toAdd = append(toAdd, matchData)
+	}
+
+	// updating matches table
+	if len(toAdd) > 0 {
+		detachedCtx, cancel := context.WithTimeout(
+			context.WithoutCancel(ctx), 
+			5*time.Second,
+		)
+		defer cancel()
+
+		go func (batch []types.LeagueMatch)  {
+			if err := utils.AddMatchData(detachedCtx, h.pool, batch); err != nil {
+				log.Printf("async AddMatchData error: %v", err)
+			} 
+		}(toAdd)
+	}
+
+	userProfile.MatchData = make([]types.LeagueMatch, 0, len(matchIDs))
+	for _, id := range matchIDs {
+		if m := matchDataMap[id]; m != nil {
+			userProfile.MatchData = append(userProfile.MatchData, *m)
+		}
+	}
+	log.Print("Match data successfully added")
+	
+	// Remember to set userProfile's icon and level from the data of the games
+	// If there are no games default to a riot API call for that data.
+
+	// Rank Calls
+
+	// Writing to file for dev
+	riotID := userProfile.GameName + userProfile.TagLine
+	err = utils.WriteProfileToFile(userProfile, riotID)
+	if err != nil {
+		log.Printf("Failed to write profile to JSON. Error: %v", err)
+	}
+
+	// Update the user's information in the databse if it was stale or maybe
+	// even if it was not
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(userProfile); err != nil {
