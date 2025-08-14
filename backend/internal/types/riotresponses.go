@@ -68,5 +68,5 @@ type LeagueProfilePage struct {
 	Level         int           `json:"summonerLevel"`
 	Ranks         []LeagueRank  `json:"ranks"`
 	MasteryData   MasteryData   `json:"masteryData"`
-	LastGames     []LeagueMatch `json:"lastGames"`
+	MatchData     []LeagueMatch `json:"lastGames"`
 }
