@@ -43,6 +43,7 @@ func (c *RiotClient) GetSummonerPUUID(reqBody types.RequestBody) (puuid string, 
 		url.PathEscape(reqBody.GameName),
 		url.PathEscape(reqBody.TagLine),
 	)
+	log.Printf("hitting endpoint: %s", endpoint)
 
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
@@ -120,7 +121,7 @@ func (c *RiotClient) GetSummonerMastery(region, puuid string) ([]types.ChampionM
 func (c *RiotClient) GetSummonerMatchIDs(puuid string, start int) ([]string, error) {
 	// TODO: actually route to nearest server instead of defaulting all to americas
 	baseEndpoint := "https://americas." + c.baseURL + "/lol/match/v5/matches/by-puuid"
-	count := "20"  // hardcoding for now
+	count := "20" // hardcoding for now
 	startStr := fmt.Sprintf("%d", start)
 	endpoint := fmt.Sprintf(
 		"%s/%s/ids?start=%s&count=%s",
@@ -164,7 +165,7 @@ func (c *RiotClient) GetSummonerMatchIDs(puuid string, start int) ([]string, err
 
 func (c *RiotClient) GetMatchData(matchID string) (types.LeagueMatch, error) {
 	var result types.LeagueMatch
-	return result, nil 
+	return result, nil
 }
 
 func (c *RiotClient) GetSummonerIconAndLevel(puuid, region string) (int, int, error) {
@@ -200,9 +201,9 @@ func (c *RiotClient) GetSummonerIconAndLevel(puuid, region string) (int, int, er
 	}
 
 	type summonerPartial struct {
-        ProfileIconID int `json:"profileIconId"`
-        SummonerLevel int `json:"summonerLevel"`
-    }
+		ProfileIconID int `json:"profileIconId"`
+		SummonerLevel int `json:"summonerLevel"`
+	}
 	var result summonerPartial
 
 	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"winnable/internal/riot"
@@ -29,6 +30,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Println("----------------------------")
 	log.Println("Received LoL profile request")
 	var req types.RequestBody
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -36,7 +38,13 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-	log.Printf("\nReceived GameName: %s Tagline: %s Region: %s", req.GameName, req.TagLine, req.Region)
+
+	log.Printf(
+		"Received GameName: %s Tagline: %s Region: %s",
+		req.GameName,
+		req.TagLine,
+		req.Region,
+	)
 
 	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
 	defer cancel()
@@ -44,7 +52,13 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// PUUID calls
 	// TODO: If !cacheCheck.Stale fetch everything from DB and write to ResponseWriter
 	// and remove all of the if !cacheCheck.Found else blocks
-	var PUUID string
+	client := riot.NewClient()
+	userProfile := types.LeagueProfilePage{
+		GameName: req.GameName,
+		TagLine:  req.TagLine,
+		Region:   req.Region,
+	}
+
 	cacheCheck, err := utils.GetPUUID(ctx, h.pool, req)
 	if err != nil {
 		log.Printf(
@@ -57,9 +71,16 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		cacheCheck.Found = false
 	}
 
-	client := riot.NewClient()
-	if !cacheCheck.Found {
-		PUUID, err = client.GetSummonerPUUID(req)
+	if cacheCheck.Found {
+		log.Print("user is cached, fetching data from DB")
+		userProfile.PUUID = cacheCheck.PUUID
+
+		if !cacheCheck.Stale {
+			log.Print("data not stale, writing to ResponseWriter")
+			// Fetch everything from DB and write to ResponseWriter
+		}
+	} else {
+		userProfile.PUUID, err = client.GetSummonerPUUID(req)
 		if err != nil {
 			http.Error(
 				w,
@@ -68,40 +89,19 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			)
 			return
 		}
-	} else {
-		PUUID = cacheCheck.PUUID
-		log.Print("PUUID fetch successful")
 	}
-
-	userProfile := types.LeagueProfilePage{
-		PUUID:    PUUID,
-		GameName: req.GameName,
-		TagLine:  req.TagLine,
-		Region:   req.Region,
-	}
+	log.Print("PUUID fetch successful")
 
 	// Mastery Calls
-	var championMasteries []types.ChampionMastery
-	if cacheCheck.Stale {
-		championMasteries, err = client.GetSummonerMastery(req.Region, userProfile.PUUID)
-		if err != nil {
-			log.Printf(
-				"Error requesting masteries:\nPUUID:%s\nError: %v",
-				userProfile.PUUID,
-				err,
-			)
-		} else {
-			log.Print("Mastery fetch successful")
-		}
+	championMasteries, err := client.GetSummonerMastery(req.Region, userProfile.PUUID)
+	if err != nil {
+		log.Printf(
+			"Error requesting masteries:\nPUUID:%s\nError: %v",
+			userProfile.PUUID,
+			err,
+		)
 	} else {
-		championMasteries, err = utils.GetMasteries(ctx, h.pool, userProfile.PUUID)
-		if err != nil {
-			log.Printf(
-				"Error querying DB for user's masteries PUUID: %s\nError: %v",
-				userProfile.PUUID,
-				err,
-			)
-		}
+		log.Print("Mastery fetch successful")
 	}
 
 	for _, c := range championMasteries {
@@ -113,8 +113,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Past matches calls
 	startIndex := 0
-	var matchIDs []string
-	matchIDs, err = client.GetSummonerMatchIDs(userProfile.PUUID, startIndex)
+	matchIDs, err := client.GetSummonerMatchIDs(userProfile.PUUID, startIndex)
 	if err != nil {
 		log.Printf(
 			"Error requesting past match IDs: \nPUUID%s\nError: %v",
@@ -140,6 +139,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		userProfile.MatchData = nil
 	}
 
+	// finding non-cached matches
 	missing := make([]string, 0, len(matchIDs))
 	for _, id := range matchIDs {
 		if m, ok := matchDataMap[id]; !ok || m == nil {
@@ -163,21 +163,6 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		toAdd = append(toAdd, matchData)
 	}
 
-	// updating matches table
-	if len(toAdd) > 0 {
-		detachedCtx, cancel := context.WithTimeout(
-			context.WithoutCancel(ctx),
-			5*time.Second,
-		)
-		defer cancel()
-
-		go func(batch []types.LeagueMatch) {
-			if err := utils.AddMatchData(detachedCtx, h.pool, batch); err != nil {
-				log.Printf("async AddMatchData error: %v", err)
-			}
-		}(toAdd)
-	}
-
 	userProfile.MatchData = make([]types.LeagueMatch, 0, len(matchIDs))
 	for _, id := range matchIDs {
 		if m := matchDataMap[id]; m != nil {
@@ -188,16 +173,16 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if len(userProfile.MatchData) > 100 { // 100 for now until client.GetMatchData is properly implemented
 		match := userProfile.MatchData[0]
-		var index int
+		var userIndex int
 		for i, v := range match.ParticipantPUUIDs {
 			if v == userProfile.PUUID {
-				index = i
+				userIndex = i
 				break
 			}
 		}
 
-		userProfile.ProfileIconID = match.Participants[index].ProfileIconID
-		userProfile.Level = match.Participants[index].SummonerLevel
+		userProfile.ProfileIconID = match.Participants[userIndex].ProfileIconID
+		userProfile.Level = match.Participants[userIndex].SummonerLevel
 	} else {
 		userProfile.ProfileIconID, userProfile.Level, err = client.GetSummonerIconAndLevel(
 			userProfile.PUUID,
@@ -220,14 +205,29 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Writing to file for dev
-	riotID := userProfile.GameName + userProfile.TagLine
-	err = utils.WriteProfileToFile(userProfile, riotID)
-	if err != nil {
-		log.Printf("Failed to write profile to JSON. Error: %v", err)
+	if os.Getenv("ENV") == "development" {
+		riotID := userProfile.GameName + "#" + userProfile.TagLine
+		err := utils.WriteProfileToFile(userProfile, riotID)
+		if err != nil {
+			log.Printf("Failed to write profile to JSON. Error: %v", err)
+		}
 	}
 
-	// Update the user's information in the databse if it was stale or maybe
-	// even if it was not
+	// Update DB with new data
+	// updating matches table
+	if len(toAdd) > 0 {
+		detachedCtx, cancel := context.WithTimeout(
+			context.WithoutCancel(ctx),
+			5*time.Second,
+		)
+		defer cancel()
+
+		go func(batch []types.LeagueMatch) {
+			if err := utils.AddMatchData(detachedCtx, h.pool, batch); err != nil {
+				log.Printf("async AddMatchData error: %v", err)
+			}
+		}(toAdd)
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(userProfile); err != nil {
