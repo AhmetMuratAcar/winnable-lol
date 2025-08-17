@@ -120,7 +120,7 @@ func (c *RiotClient) GetSummonerMastery(region, puuid string) ([]types.ChampionM
 func (c *RiotClient) GetSummonerMatchIDs(puuid string, start int) ([]string, error) {
 	// TODO: actually route to nearest server instead of defaulting all to americas
 	baseEndpoint := "https://americas." + c.baseURL + "/lol/match/v5/matches/by-puuid"
-	count := "20"
+	count := "20"  // hardcoding for now
 	startStr := fmt.Sprintf("%d", start)
 	endpoint := fmt.Sprintf(
 		"%s/%s/ids?start=%s&count=%s",
@@ -165,4 +165,89 @@ func (c *RiotClient) GetSummonerMatchIDs(puuid string, start int) ([]string, err
 func (c *RiotClient) GetMatchData(matchID string) (types.LeagueMatch, error) {
 	var result types.LeagueMatch
 	return result, nil 
+}
+
+func (c *RiotClient) GetSummonerIconAndLevel(puuid, region string) (int, int, error) {
+	endpoint := fmt.Sprintf(
+		"https://%s.%s/lol/summoner/v4/summoners/by-puuid/%s",
+		region,
+		c.baseURL,
+		puuid,
+	)
+
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return -1, -1, fmt.Errorf("error creating GetSummonerIconAndLevel request Error: %w", err)
+	}
+	req.Header.Set("X-Riot-Token", c.apiKey)
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return -1, -1, fmt.Errorf("GetSummonerIconAndLevel API request failed: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(res.Body)
+		err := fmt.Errorf(
+			"non-200 response: %s\n%s",
+			res.Status,
+			string(bodyBytes),
+		)
+
+		log.Printf("RIOT API ERROR: %v", err)
+		return -1, -1, err
+	}
+
+	type summonerPartial struct {
+        ProfileIconID int `json:"profileIconId"`
+        SummonerLevel int `json:"summonerLevel"`
+    }
+	var result summonerPartial
+
+	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
+		return -1, -1, fmt.Errorf("error decoding response JSON: %w", err)
+	}
+
+	return result.ProfileIconID, result.SummonerLevel, nil
+}
+
+func (c *RiotClient) GetSummonerRanks(puuid, region string) ([]types.LeagueRank, error) {
+	endpoint := fmt.Sprintf(
+		"https://%s.%s/lol/league/v4/entries/by-puuid/%s",
+		region,
+		c.baseURL,
+		puuid,
+	)
+
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating GetSummonerRank request Error: %w", err)
+	}
+	req.Header.Set("X-Riot-Token", c.apiKey)
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("GetSummonerRank API request failed: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(res.Body)
+		err := fmt.Errorf(
+			"non-200 response: %s\n%s",
+			res.Status,
+			string(bodyBytes),
+		)
+
+		log.Printf("RIOT API ERROR: %v", err)
+		return nil, err
+	}
+
+	var result []types.LeagueRank
+	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("error decoding JSON: %w", err)
+	}
+
+	return result, nil
 }
