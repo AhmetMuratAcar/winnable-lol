@@ -26,7 +26,7 @@ export default function ProfileSection({ region, slug }) {
 
         async function fetchData() {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/mastery`, {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/lol/profile`, {
                     method: `POST`,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
