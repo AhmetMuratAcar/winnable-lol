@@ -61,6 +61,7 @@ type LeagueRank struct {
 }
 
 type LeagueProfilePage struct {
+	PUUID         string        `json:"PUUID"`
 	ProfileIconID int           `json:"profileIconId"`
 	GameName      string        `json:"gameName"`
 	TagLine       string        `json:"tagLine"`
@@ -68,5 +69,5 @@ type LeagueProfilePage struct {
 	Level         int           `json:"summonerLevel"`
 	Ranks         []LeagueRank  `json:"ranks"`
 	MasteryData   MasteryData   `json:"masteryData"`
-	MatchData     []LeagueMatch `json:"lastGames"`
+	MatchData     []LeagueMatch `json:"matchData"`
 }
