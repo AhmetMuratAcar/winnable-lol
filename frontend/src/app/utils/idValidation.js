@@ -81,7 +81,7 @@ export function idValidation({ region, riotID }) {
   result.tagLine  = tagPart;
 
   // Validation rules
-  const nameRe = /^[\p{L}0-9]{3,16}$/u;
+  const nameRe = /^[\p{L}0-9 _\.]{3,16}$/u;
   const tagRe  = /^[\p{L}0-9]{2,5}$/u;
 
   if (nameRe.test(namePart) && tagRe.test(tagPart)) {

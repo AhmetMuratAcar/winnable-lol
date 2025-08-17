@@ -17,7 +17,10 @@ export default function ProfileSection({ region, slug }) {
             return
         }
 
-        const [gameName, tagLine] = slug.split('-') || []
+        const [gameNameEncoded, tagLineEncoded] = slug.split('-') || []
+        const gameName = decodeURIComponent(gameNameEncoded)
+        const tagLine = decodeURIComponent(tagLineEncoded)
+        
         if (!gameName || !tagLine) {
             setLoading(false)
             router.push('/summoner-not-found')
