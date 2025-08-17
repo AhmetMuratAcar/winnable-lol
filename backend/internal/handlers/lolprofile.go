@@ -42,6 +42,8 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	// PUUID calls
+	// TODO: If !cacheCheck.Stale fetch everything from DB and write to ResponseWriter
+	// and remove all of the if !cacheCheck.Found else blocks
 	var PUUID string
 	cacheCheck, err := utils.GetPUUID(ctx, h.pool, req)
 	if err != nil {
@@ -68,10 +70,11 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		PUUID = cacheCheck.PUUID
+		log.Print("PUUID fetch successful")
 	}
-	log.Print("PUUID fetch successful")
 
 	userProfile := types.LeagueProfilePage{
+		PUUID:    PUUID,
 		GameName: req.GameName,
 		TagLine:  req.TagLine,
 		Region:   req.Region,
@@ -80,47 +83,55 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Mastery Calls
 	var championMasteries []types.ChampionMastery
 	if cacheCheck.Stale {
-		championMasteries, err = client.GetSummonerMastery(req.Region, PUUID)
+		championMasteries, err = client.GetSummonerMastery(req.Region, userProfile.PUUID)
 		if err != nil {
 			log.Printf(
 				"Error requesting masteries:\nPUUID:%s\nError: %v",
-				PUUID,
+				userProfile.PUUID,
 				err,
 			)
+		} else {
+			log.Print("Mastery fetch successful")
 		}
 	} else {
-		championMasteries, err = utils.GetMasteries(ctx, h.pool, PUUID)
+		championMasteries, err = utils.GetMasteries(ctx, h.pool, userProfile.PUUID)
 		if err != nil {
 			log.Printf(
 				"Error querying DB for user's masteries PUUID: %s\nError: %v",
-				PUUID,
+				userProfile.PUUID,
 				err,
 			)
 		}
 	}
-	log.Print("Mastery fetch successful")
+
+	for _, c := range championMasteries {
+		userProfile.MasteryData.TotalMastery += c.ChampionLevel
+		userProfile.MasteryData.TotalMasteryPoints += c.ChampionPoints
+	}
+	userProfile.MasteryData.ChampionsPlayed = len(championMasteries)
 	userProfile.MasteryData.ChampionMasteries = championMasteries
 
 	// Past matches calls
 	startIndex := 0
 	var matchIDs []string
-	matchIDs, err = client.GetSummonerMatchIDs(PUUID, startIndex)
+	matchIDs, err = client.GetSummonerMatchIDs(userProfile.PUUID, startIndex)
 	if err != nil {
 		log.Printf(
 			"Error requesting past match IDs: \nPUUID%s\nError: %v",
-			PUUID,
+			userProfile.PUUID,
 			err,
 		)
+	} else {
+		log.Print("MatchIDs fetch successful")
 	}
-	log.Print("MatchIDs fetch successful")
-	
+
 	matchDataMap := make(map[string]*types.LeagueMatch)
 	if len(matchIDs) != 0 {
 		err = utils.GetMatchDataByIDs(ctx, h.pool, matchIDs, &matchDataMap)
 		if err != nil {
 			log.Printf(
 				"Error populating matchDataMap PUUID: %s\nmatchIDs: %s",
-				PUUID,
+				userProfile.PUUID,
 				matchIDs,
 			)
 			userProfile.MatchData = nil
@@ -155,15 +166,15 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// updating matches table
 	if len(toAdd) > 0 {
 		detachedCtx, cancel := context.WithTimeout(
-			context.WithoutCancel(ctx), 
+			context.WithoutCancel(ctx),
 			5*time.Second,
 		)
 		defer cancel()
 
-		go func (batch []types.LeagueMatch)  {
+		go func(batch []types.LeagueMatch) {
 			if err := utils.AddMatchData(detachedCtx, h.pool, batch); err != nil {
 				log.Printf("async AddMatchData error: %v", err)
-			} 
+			}
 		}(toAdd)
 	}
 
@@ -174,11 +185,39 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	log.Print("Match data successfully added")
-	
-	// Remember to set userProfile's icon and level from the data of the games
-	// If there are no games default to a riot API call for that data.
+
+	if len(userProfile.MatchData) > 100 { // 100 for now until client.GetMatchData is properly implemented
+		match := userProfile.MatchData[0]
+		var index int
+		for i, v := range match.ParticipantPUUIDs {
+			if v == userProfile.PUUID {
+				index = i
+				break
+			}
+		}
+
+		userProfile.ProfileIconID = match.Participants[index].ProfileIconID
+		userProfile.Level = match.Participants[index].SummonerLevel
+	} else {
+		userProfile.ProfileIconID, userProfile.Level, err = client.GetSummonerIconAndLevel(
+			userProfile.PUUID,
+			userProfile.Region,
+		)
+
+		if err != nil {
+			log.Printf("error fetching summoner icon and level. Error: %v", err)
+		} else {
+			log.Print("Summoner icon and level successfully addded")
+		}
+	}
 
 	// Rank Calls
+	userProfile.Ranks, err = client.GetSummonerRanks(userProfile.PUUID, userProfile.Region)
+	if err != nil {
+		log.Printf("error fetching summoner ranks. Error: %v", err)
+	} else {
+		log.Print("Summoner ranks successfully added")
+	}
 
 	// Writing to file for dev
 	riotID := userProfile.GameName + userProfile.TagLine
