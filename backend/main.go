@@ -16,7 +16,6 @@ import (
 )
 
 func init() {
-	// Load env
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found or failed to load; using system environment")
 	} else {
@@ -52,6 +51,8 @@ func run() error {
 
 	if err := pool.Ping(ctx); err != nil {
 		return fmt.Errorf("db ping failed: %w", err)
+	} else {
+		log.Print("DB ping successful")
 	}
 
 	// Configure CORS
@@ -65,7 +66,7 @@ func run() error {
 	// Starting server
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080" // default fallback
+		port = "8080"
 	}
 
 	log.Printf("Server is running on port %s...", port)
