@@ -184,8 +184,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Print("Match data successfully added")
 
-	// 100 for now until client.GetMatchData is properly implemented. Change it back to > 0 after.
-	if len(userProfile.MatchData) > 100 {
+	if len(userProfile.MatchData) > 0 {
 		match := userProfile.MatchData[0]
 		var userIndex int
 		for i, v := range match.ParticipantPUUIDs {
@@ -195,6 +194,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		log.Println("getting icon and level from last match")
 		userProfile.ProfileIconID = match.Participants[userIndex].ProfileIconID
 		userProfile.Level = match.Participants[userIndex].SummonerLevel
 	} else {
