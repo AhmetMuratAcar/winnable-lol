@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"winnable/internal/types"
+	"winnable/internal/utils"
 )
 
 type RiotClient struct {
@@ -43,7 +44,6 @@ func (c *RiotClient) GetSummonerPUUID(reqBody types.RequestBody) (puuid string, 
 		url.PathEscape(reqBody.GameName),
 		url.PathEscape(reqBody.TagLine),
 	)
-	log.Printf("hitting endpoint: %s", endpoint)
 
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
@@ -62,7 +62,7 @@ func (c *RiotClient) GetSummonerPUUID(reqBody types.RequestBody) (puuid string, 
 
 		err := &types.HTTPError{
 			StatusCode: res.StatusCode,
-			Body: string(bodyBytes),
+			Body:       string(bodyBytes),
 		}
 
 		log.Printf("RIOT API ERROR: %v", err)
@@ -164,7 +164,39 @@ func (c *RiotClient) GetSummonerMatchIDs(puuid string, start int) ([]string, err
 }
 
 func (c *RiotClient) GetMatchData(matchID string) (types.LeagueMatch, error) {
-	var result types.LeagueMatch
+	baseEndpoint := "https://americas." + c.baseURL + "/lol/match/v5/matches"
+	endpoint := fmt.Sprintf("%s/%s", baseEndpoint, matchID)
+
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return types.LeagueMatch{}, fmt.Errorf("error creating GetMatchData request: %w", err)
+	}
+	req.Header.Set("X-Riot-Token", c.apiKey)
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return types.LeagueMatch{}, fmt.Errorf("GetMatchData API request failed: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(res.Body)
+		err := fmt.Errorf(
+			"non-200 response: %s\n%s",
+			res.Status,
+			string(bodyBytes),
+		)
+
+		log.Printf("RIOT API ERROR: %v", err)
+		return types.LeagueMatch{}, err
+	}
+
+	var rawMatchData types.RawMatchResponse
+	if err := json.NewDecoder((res.Body)).Decode(&rawMatchData); err != nil {
+		return types.LeagueMatch{}, fmt.Errorf("error decoding JSON: %w", err)
+	}
+
+	result := utils.ToLeagueMatch(rawMatchData)
 	return result, nil
 }
 
@@ -178,7 +210,7 @@ func (c *RiotClient) GetSummonerIconAndLevel(puuid, region string) (int, int, er
 
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
-		return -1, -1, fmt.Errorf("error creating GetSummonerIconAndLevel request Error: %w", err)
+		return -1, -1, fmt.Errorf("error creating GetSummonerIconAndLevel request: %w", err)
 	}
 	req.Header.Set("X-Riot-Token", c.apiKey)
 
@@ -223,7 +255,7 @@ func (c *RiotClient) GetSummonerRanks(puuid, region string) ([]types.LeagueRank,
 
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
-		return nil, fmt.Errorf("error creating GetSummonerRank request Error: %w", err)
+		return nil, fmt.Errorf("error creating GetSummonerRank request: %w", err)
 	}
 	req.Header.Set("X-Riot-Token", c.apiKey)
 

@@ -82,7 +82,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		userProfile.PUUID, err = client.GetSummonerPUUID(req)
 		if err != nil {
 			var httpErr *types.HTTPError
-			if errors.As(err ,&httpErr) {
+			if errors.As(err, &httpErr) {
 				log.Printf("GetSummonerPUUID HTTPError: status=%d err=%v", httpErr.StatusCode, err)
 				http.Error(
 					w,
