@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -50,8 +51,6 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	// PUUID calls
-	// TODO: If !cacheCheck.Stale fetch everything from DB and write to ResponseWriter
-	// and remove all of the if !cacheCheck.Found else blocks
 	client := riot.NewClient()
 	userProfile := types.LeagueProfilePage{
 		GameName: req.GameName,
@@ -82,13 +81,27 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		userProfile.PUUID, err = client.GetSummonerPUUID(req)
 		if err != nil {
-			http.Error(
-				w,
-				"could not fetch summoner: "+err.Error(),
-				http.StatusNotFound,
-			)
+			var httpErr *types.HTTPError
+			if errors.As(err ,&httpErr) {
+				log.Printf("GetSummonerPUUID HTTPError: status=%d err=%v", httpErr.StatusCode, err)
+				http.Error(
+					w,
+					"could not fetch summoner",
+					httpErr.StatusCode,
+				)
+			} else {
+				log.Printf("GetSummonerPUUID internal error: %v", err)
+				http.Error(
+					w,
+					"internal server error",
+					http.StatusInternalServerError,
+				)
+			}
+
 			return
 		}
+		// Only early terminating if PUUID fetch fails. If other client requests fail the userProfile
+		// is constructed with any successfully received data.
 	}
 	log.Print("PUUID fetch successful")
 
@@ -171,7 +184,8 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Print("Match data successfully added")
 
-	if len(userProfile.MatchData) > 100 { // 100 for now until client.GetMatchData is properly implemented
+	// 100 for now until client.GetMatchData is properly implemented. Change it back to > 0 after.
+	if len(userProfile.MatchData) > 100 {
 		match := userProfile.MatchData[0]
 		var userIndex int
 		for i, v := range match.ParticipantPUUIDs {

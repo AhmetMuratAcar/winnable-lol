@@ -59,11 +59,11 @@ func (c *RiotClient) GetSummonerPUUID(reqBody types.RequestBody) (puuid string, 
 
 	if res.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(res.Body)
-		err := fmt.Errorf(
-			"non-200 response: %s\n%s",
-			res.Status,
-			string(bodyBytes),
-		)
+
+		err := &types.HTTPError{
+			StatusCode: res.StatusCode,
+			Body: string(bodyBytes),
+		}
 
 		log.Printf("RIOT API ERROR: %v", err)
 		return "", err
