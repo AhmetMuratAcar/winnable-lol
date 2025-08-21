@@ -11,6 +11,27 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// MarkSummonerStale marks a summoner as stale by changing the updated_at column of the
+// summoners table to 24 hours before the current time.
+func MarkSummonerStale(ctx context.Context, pool *pgxpool.Pool, puuid string) error {
+	query := `
+		UPDATE summoners
+		SET updated_at = now() - interval '24 hours'
+		WHERE puuid = $1;
+	`
+
+	cmdTag, err := pool.Exec(ctx, query, puuid)
+	if err != nil {
+		return fmt.Errorf("failed to mark summoner stale: %w", err)
+	}
+
+	if cmdTag.RowsAffected() == 0 {
+		return fmt.Errorf("no summoner found with puuid: %s", puuid)
+	}
+
+	return nil
+}
+
 // GetPUUID queries summoners table for given user's PUUID
 // Example:
 //
