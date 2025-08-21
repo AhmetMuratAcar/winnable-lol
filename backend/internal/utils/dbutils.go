@@ -11,6 +11,11 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+func CachedProfileConstructor(ctx context.Context, pool *pgxpool.Pool, profile *types.LeagueProfilePage) (types.CachedProfileCheckList, error) {
+	return types.CachedProfileCheckList{}, nil
+}
+
+
 // MarkSummonerStale marks a summoner as stale by changing the updated_at column of the
 // summoners table to 24 hours before the current time.
 func MarkSummonerStale(ctx context.Context, pool *pgxpool.Pool, puuid string) error {

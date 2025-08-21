@@ -67,7 +67,6 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			err,
 		)
 		// don't return and default back to riot API call for PUUID
-		cacheCheck.Found = false
 	}
 
 	if cacheCheck.Found {
@@ -75,8 +74,60 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		userProfile.PUUID = cacheCheck.PUUID
 
 		if !cacheCheck.Stale {
-			log.Print("data not stale, writing to ResponseWriter")
-			// Fetch everything from DB and write to ResponseWriter
+			log.Print("data not stale, fetching from DB")
+			// Fetch everything from DB and write to ResponseWriter if all data is present
+			checklist, err := utils.CachedProfileConstructor(ctx, h.pool, &userProfile)
+			if err != nil {
+				log.Printf("Error calling CachedProfileConstructor: %v", err)
+				// marking data as stale so consecutive calls dont lead to the same error
+				// and instead default to Riot API calls
+				err = utils.MarkSummonerStale(ctx, h.pool, userProfile.PUUID)
+				if err != nil {
+					log.Printf("Failed to mark summoner stale: %v", err)
+				}
+
+				http.Error(
+					w,
+					"internal server error",
+					http.StatusInternalServerError,
+				)
+				return
+			}
+			
+			err = riot.FillCacheGaps(
+				checklist, 
+				&userProfile, 
+				client,
+				ctx,
+				h.pool,
+			)
+			if err != nil {
+				log.Printf("Error calling FillCacheGaps: %v", err)
+				// marking data as stale so consecutive calls dont lead to the same error
+				// and instead default to Riot API calls
+				err = utils.MarkSummonerStale(ctx, h.pool, userProfile.PUUID)
+				if err != nil {
+					log.Printf("Failed to mark summoner stale: %v", err)
+				}
+
+				http.Error(
+					w,
+					"internal server error",
+					http.StatusInternalServerError,
+				)
+				return
+			}
+			
+			w.Header().Set("Content-Type", "application/json")
+			if err := json.NewEncoder(w).Encode(userProfile); err != nil {
+				log.Printf("failed to encode user's profile data: %v", err)
+				http.Error(
+					w,
+					"internal server error",
+					http.StatusInternalServerError,
+				)
+				return
+			}
 		}
 	} else {
 		userProfile.PUUID, err = client.GetSummonerPUUID(req)
@@ -126,7 +177,8 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Past matches calls
 	startIndex := 0
-	matchIDs, err := client.GetSummonerMatchIDs(userProfile.PUUID, startIndex)
+	matchCount := 20
+	matchIDs, err := client.GetSummonerMatchIDs(userProfile.PUUID, startIndex, matchCount)
 	if err != nil {
 		log.Printf(
 			"Error requesting past match IDs: \nPUUID%s\nError: %v",
