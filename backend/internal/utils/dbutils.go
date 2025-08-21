@@ -2,21 +2,58 @@ package utils
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"time"
 	"winnable/internal/types"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// GetPUUID queries users table for given user's PUUID
+// GetPUUID queries summoners table for given user's PUUID
 // Example:
 //
 //	cacheCheck, err := utils.GetPUUID(ctx, h.pool, req)
 func GetPUUID(ctx context.Context, pool *pgxpool.Pool, userInfo types.RequestBody) (types.PUUIDCacheCheck, error) {
-	// TODO: actually query DB for user PUUID
-	res := types.PUUIDCacheCheck{
-		Stale: true,
+	var puuid string
+	var updatedAt time.Time
+
+	query := `
+        SELECT puuid, updated_at
+        FROM summoners
+        WHERE region = $1
+          AND lower(game_name) = lower($2)
+          AND lower(tag_line) = lower($3)
+        LIMIT 1;
+    `
+
+	err := pool.QueryRow(
+		ctx, 
+		query, 
+		userInfo.Region, userInfo.GameName, userInfo.TagLine,
+		).Scan(
+			&puuid, 
+			&updatedAt,
+		)
+	
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return types.PUUIDCacheCheck{
+				Found: false,
+			}, nil
+		}
+
+		return types.PUUIDCacheCheck{}, fmt.Errorf("getPUUID query failed: %w", err)
 	}
-	return res, nil
+
+	stale := time.Since(updatedAt) > 24 * time.Hour
+
+	return types.PUUIDCacheCheck{
+		Found: true,
+		PUUID: puuid,
+		Stale: stale,
+	}, nil
 }
 
 // GetMasteries queries masteries table for given user's champion masteries
