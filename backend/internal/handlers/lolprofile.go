@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"winnable/internal/lolprofilesvc"
 	"winnable/internal/riot"
 	"winnable/internal/types"
 	"winnable/internal/utils"
@@ -76,7 +77,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if !cacheCheck.Stale {
 			log.Print("data not stale, fetching from DB")
 			// Fetch everything from DB and write to ResponseWriter if all data is present
-			checklist, err := utils.CachedProfileConstructor(ctx, h.pool, &userProfile)
+			checklist, err := lolprofilesvc.CachedProfileConstructor(ctx, h.pool, &userProfile)
 			if err != nil {
 				log.Printf("Error calling CachedProfileConstructor: %v", err)
 				// marking data as stale so consecutive calls dont lead to the same error
@@ -93,16 +94,16 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				)
 				return
 			}
-			
-			err = riot.FillCacheGaps(
-				checklist, 
-				&userProfile, 
+
+			err = lolprofilesvc.FillLoLProfileCacheGaps(
+				checklist,
+				&userProfile,
 				client,
 				ctx,
 				h.pool,
 			)
 			if err != nil {
-				log.Printf("Error calling FillCacheGaps: %v", err)
+				log.Printf("Error calling FillLoLProfileCacheGaps: %v", err)
 				// marking data as stale so consecutive calls dont lead to the same error
 				// and instead default to Riot API calls
 				err = utils.MarkSummonerStale(ctx, h.pool, userProfile.PUUID)
@@ -117,7 +118,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				)
 				return
 			}
-			
+
 			w.Header().Set("Content-Type", "application/json")
 			if err := json.NewEncoder(w).Encode(userProfile); err != nil {
 				log.Printf("failed to encode user's profile data: %v", err)
@@ -191,10 +192,10 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	matchDataMap := make(map[string]*types.LeagueMatch)
 	if len(matchIDs) != 0 {
-		err = utils.GetMatchDataByIDs(ctx, h.pool, matchIDs, &matchDataMap)
+		matchDataMap, err = lolprofilesvc.ConstructMatchDataMap(ctx, h.pool, matchIDs)
 		if err != nil {
 			log.Printf(
-				"Error populating matchDataMap PUUID: %s\nmatchIDs: %s",
+				"Error constructing matchDataMap PUUID: %s\nmatchIDs: %s",
 				userProfile.PUUID,
 				matchIDs,
 			)
