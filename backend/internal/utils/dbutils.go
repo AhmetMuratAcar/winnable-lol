@@ -5,21 +5,17 @@ import (
 	"errors"
 	"fmt"
 	"time"
+	"winnable/internal/config"
 	"winnable/internal/types"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func CachedProfileConstructor(ctx context.Context, pool *pgxpool.Pool, profile *types.LeagueProfilePage) (types.CachedProfileCheckList, error) {
-	return types.CachedProfileCheckList{}, nil
-}
-
-
 // MarkSummonerStale marks a summoner as stale by changing the updated_at column of the
 // summoners table to 24 hours before the current time.
 func MarkSummonerStale(ctx context.Context, pool *pgxpool.Pool, puuid string) error {
-	query := `
+	const query = `
 		UPDATE summoners
 		SET updated_at = now() - interval '24 hours'
 		WHERE puuid = $1;
@@ -45,7 +41,7 @@ func GetPUUID(ctx context.Context, pool *pgxpool.Pool, userInfo types.RequestBod
 	var puuid string
 	var updatedAt time.Time
 
-	query := `
+	const query = `
         SELECT puuid, updated_at
         FROM summoners
         WHERE region = $1
@@ -55,25 +51,23 @@ func GetPUUID(ctx context.Context, pool *pgxpool.Pool, userInfo types.RequestBod
     `
 
 	err := pool.QueryRow(
-		ctx, 
-		query, 
+		ctx,
+		query,
 		userInfo.Region, userInfo.GameName, userInfo.TagLine,
-		).Scan(
-			&puuid, 
-			&updatedAt,
-		)
-	
+	).Scan(
+		&puuid,
+		&updatedAt,
+	)
+
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return types.PUUIDCacheCheck{
-				Found: false,
-			}, nil
+			return types.PUUIDCacheCheck{Found: false}, nil
 		}
 
-		return types.PUUIDCacheCheck{}, fmt.Errorf("getPUUID query failed: %w", err)
+		return types.PUUIDCacheCheck{Found: false}, fmt.Errorf("getPUUID query failed: %w", err)
 	}
 
-	stale := time.Since(updatedAt) > 24 * time.Hour
+	stale := time.Since(updatedAt) > 24*time.Hour
 
 	return types.PUUIDCacheCheck{
 		Found: true,
@@ -87,18 +81,71 @@ func GetPUUID(ctx context.Context, pool *pgxpool.Pool, userInfo types.RequestBod
 //
 //	championMasteries, err := utils.GetMasteries(ctx, h.pool, PUUID)
 func GetMasteries(ctx context.Context, pool *pgxpool.Pool, PUUID string) ([]types.ChampionMastery, error) {
-	// TODO: actually query DB for user masteries
-	var championMasteries []types.ChampionMastery
+	const query = `
+		SELECT champion_id, champion_level, champion_points
+		FROM champion_masteries
+		WHERE puuid = $1
+		ORDER BY champion_points DESC;
+	`
+
+	rows, err := pool.Query(ctx, query, PUUID)
+	if err != nil {
+		return nil, fmt.Errorf("GetMasteries query failed: %w", err)
+	}
+	defer rows.Close()
+
+	championMasteries := make([]types.ChampionMastery, 0, config.LEAGUE_CHAMP_COUNT)
+	for rows.Next() {
+		var currMastery types.ChampionMastery
+		if err := rows.Scan(
+			&currMastery.ChampionID,
+			&currMastery.ChampionLevel,
+			&currMastery.ChampionPoints,
+		); err != nil {
+			return nil, fmt.Errorf("GetMasteries scan failed: %w", err)
+		}
+
+		championMasteries = append(championMasteries, currMastery)
+	}
+
+	if rows.Err() != nil {
+		return nil, fmt.Errorf("GetMasteries rows iteration failed: %w", err)
+	}
+
 	return championMasteries, nil
 }
 
-// GetMatchIDs queries matches table for given user's past Match IDs
+// GetMatchIDs queries matches table for given user's past 20 Match IDs
 // Example:
 //
 //	matchIDs, err := utils.GetMatchIDs(ctx, h.pool, PUUID)
 func GetMatchIDs(ctx context.Context, pool *pgxpool.Pool, PUUID string) ([]string, error) {
-	// TODO: actually query DB for user matches
-	var matchIDs []string
+	const query = `
+		SELECT match_id
+		FROM match_participants
+		WHERE puuid = $1
+		ORDER BY game_start DESC
+		LIMIT 20;
+	`
+
+	rows, err := pool.Query(ctx, query, PUUID)
+	if err != nil {
+		return nil, fmt.Errorf("GetMatchIDs query failed: %w", err)
+	}
+	defer rows.Close()
+
+	matchIDs := make([]string, 0, 20)
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, fmt.Errorf("GetMatchIDs scan failed: %w", err)
+		}
+		matchIDs = append(matchIDs, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("GetMatchIDs rows iteration failed: %w", err)
+	}
+
 	return matchIDs, nil
 }
 
