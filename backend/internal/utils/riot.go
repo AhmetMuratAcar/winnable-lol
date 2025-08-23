@@ -54,10 +54,12 @@ func ToLeagueMatch(raw types.RawMatchResponse) types.LeagueMatch {
 		res.Participants = append(res.Participants, curr)
 	}
 
-	for i, t := range raw.Info.Teams {
-		for j, b := range t.Bans {
-			res.Bans[i][j] = b.ChampionID
+	for _, t := range raw.Info.Teams {
+		row := make([]int, 0, len(t.Bans))
+		for _, b := range t.Bans {
+			row = append(row, b.ChampionID)
 		}
+		res.Bans = append(res.Bans, row)
 	}
 
 	if raw.Info.Teams[0].Win {

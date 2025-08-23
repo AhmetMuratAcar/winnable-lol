@@ -28,7 +28,7 @@ type LeagueMatch struct {
 	ParticipantPUUIDs  []string                 `json:"participantPUUIDs"`
 	Participants       []LeagueMatchParticipant `json:"participants"`
 	QueueId            int                      `json:"queueId"`
-	Bans               [2][5]int                `json:"bans"`
+	Bans               [][]int                  `json:"bans"`
 	WinningTeam        int                      `json:"winningTeam"`
 }
 
