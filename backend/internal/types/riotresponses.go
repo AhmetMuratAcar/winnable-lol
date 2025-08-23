@@ -40,6 +40,8 @@ type LeagueMatchParticipant struct {
 	GoldEarned                  int    `json:"goldEarned"`
 	Items                       []int  `json:"items"`
 	Kills                       int    `json:"kills"`
+	ParticipantIndex            int    `json:"participantIndex"`
+	Team                        int    `json:"team"`
 	ProfileIconID               int    `json:"profileIcon"`
 	PUUID                       string `json:"puuid"`
 	RiotIDGameName              string `json:"riotIdGameName"`

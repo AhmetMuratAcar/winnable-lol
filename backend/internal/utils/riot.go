@@ -13,7 +13,8 @@ func ToLeagueMatch(raw types.RawMatchResponse) types.LeagueMatch {
 		QueueId:            raw.Info.QueueID,
 	}
 
-	for _, p := range raw.Info.Participants {
+	participantCount := len(res.ParticipantPUUIDs) + 1
+	for i, p := range raw.Info.Participants {
 		curr := types.LeagueMatchParticipant{
 			Assists:                     p.Assists,
 			ChampionID:                  p.ChampionID,
@@ -21,6 +22,7 @@ func ToLeagueMatch(raw types.RawMatchResponse) types.LeagueMatch {
 			Deaths:                      p.Deaths,
 			GoldEarned:                  p.GoldEarned,
 			Kills:                       p.Kills,
+			ParticipantIndex:            i,
 			ProfileIconID:               p.ProfileIcon,
 			PUUID:                       p.Puuid,
 			RiotIDGameName:              p.RiotIDGameName,
@@ -41,6 +43,12 @@ func ToLeagueMatch(raw types.RawMatchResponse) types.LeagueMatch {
 			p.Item3,
 			p.Item4,
 			p.Item5,
+		}
+
+		if i < participantCount/2 {
+			curr.Team = 0
+		} else {
+			curr.Team = 1
 		}
 
 		res.Participants = append(res.Participants, curr)
