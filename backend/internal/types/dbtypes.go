@@ -3,9 +3,10 @@ package types
 import "time"
 
 type PUUIDCacheCheck struct {
-	Found bool
-	PUUID string
-	Stale bool
+	Found       bool
+	PUUID       string
+	Stale       bool
+	IsPopulated bool
 }
 
 type CachedProfileCheckList struct {
@@ -65,6 +66,7 @@ type SummonerRow struct {
 	ChampionsPlayed    int
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
+	IsPopulated        bool
 }
 
 type RankRow struct {
