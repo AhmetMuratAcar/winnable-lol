@@ -120,7 +120,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Print("PUUID fetch successful")
 
 	// Mastery Calls
-	if !cacheCheck.Found && !cacheCheck.IsPopulated {
+	if !cacheCheck.Found || !cacheCheck.IsPopulated || cacheCheck.Stale {
 		championMasteries, err := client.GetSummonerMastery(req.Region, userProfile.PUUID)
 		if err != nil {
 			log.Printf(
@@ -141,7 +141,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Rank Calls
-	if !cacheCheck.Found && !cacheCheck.IsPopulated {
+	if !cacheCheck.Found || !cacheCheck.IsPopulated || cacheCheck.Stale {
 		userProfile.Ranks, err = client.GetSummonerRanks(userProfile.PUUID, userProfile.Region)
 		if err != nil {
 			log.Printf("error fetching summoner ranks. Error: %v", err)
@@ -156,7 +156,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	startIndex := 0
 	matchCount := 20
 
-	if cacheCheck.Found && cacheCheck.IsPopulated {
+	if cacheCheck.Found && cacheCheck.IsPopulated && !cacheCheck.Stale {
 		matchIDs, err = utils.GetMatchIDs(ctx, h.pool, userProfile.PUUID)
 		if err != nil {
 			log.Printf("Error querying DB for past match IDs: %v", err)
@@ -215,7 +215,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	log.Print("Match data successfully added")
-	
+
 	// Level and icon ID calls
 	if len(userProfile.MatchData) > 0 {
 		match := userProfile.MatchData[0]
@@ -252,21 +252,62 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Update DB with new data
-	// updating matches table
-	if len(toAdd) > 0 {
-		detachedCtx, cancel := context.WithTimeout(
-			context.WithoutCancel(ctx),
-			5*time.Second,
-		)
-		defer cancel()
+	// Updating DB with new data
+	pool := h.pool
+	checkCopy := cacheCheck
+	profileCopy := userProfile
+	toAddCopy := append([]types.LeagueMatch(nil), toAdd...)
 
-		go func(batch []types.LeagueMatch) {
-			if err := utils.AddMatchData(detachedCtx, h.pool, batch); err != nil {
-				log.Printf("async AddMatchData error: %v", err)
+	go func(
+		parent context.Context,
+		pool *pgxpool.Pool,
+		check types.PUUIDCacheCheck,
+		profile types.LeagueProfilePage,
+		newMatches []types.LeagueMatch,
+	) {
+		ctx, cancel := context.WithTimeout(context.WithoutCancel(parent), 30*time.Second)
+		defer cancel()
+		
+		// add all new PUUIDs found for matches to summoners
+		idMap := make(map[string]bool)
+		newRows := make([]types.SummonerRow, 0, len(profile.MatchData)*9)
+		for _, m := range profile.MatchData {
+			for _, p := range m.Participants {
+				id := p.PUUID
+				if _, ok := idMap[id]; !ok && id != profile.PUUID {
+					row := types.SummonerRow{
+						PUUID: id,
+						Region: profile.Region,
+						GameName: p.RiotIDGameName,
+						TagLine: p.RiotIDTagline,
+						ProfileIconID: p.ProfileIconID,
+						SummonerLevel: p.SummonerLevel,
+						CreatedAt: time.Now(),
+						UpdatedAt: time.Now(),
+						IsPopulated: false,
+					}
+					newRows = append(newRows, row)
+					idMap[id] = true
+				}
 			}
-		}(toAdd)
-	}
+		}
+
+		if err := utils.AddNewSummoners(ctx, pool, newRows); err != nil {
+			log.Printf("AddNewSummoners error: %v", err)
+		}
+
+		// update/add current user's data
+		if err := utils.SyncProfileData(ctx, pool, check, profile); err != nil {
+			log.Printf("SyncProfileData error: %v", err)
+		}
+
+		// update matches tables
+		if len(newMatches) > 0 {
+			if err := utils.AddMatchData(ctx, pool, newMatches); err != nil {
+				log.Printf("AddMatchData error: %v", err)
+			}
+		}
+	}(ctx, pool, checkCopy, profileCopy, toAddCopy)
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(userProfile); err != nil {
