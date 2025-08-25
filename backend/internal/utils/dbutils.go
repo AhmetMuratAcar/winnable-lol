@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
 	"winnable/internal/config"
 	"winnable/internal/types"
 
@@ -12,12 +13,35 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// SyncProfileData updates all of a league profile's data in the DB.
+//
+// Updated tables: summoners, champion_masteries, ranks
+func SyncProfileData(
+	ctx context.Context,
+	pool *pgxpool.Pool,
+	cacheCheck types.PUUIDCacheCheck,
+	userProfile types.LeagueProfilePage,
+) error {
+	if cacheCheck.Found && !cacheCheck.IsPopulated {
+		// Update summoners table and add everything else
+
+	} else if cacheCheck.Found && cacheCheck.Stale {
+		// Update all tables
+
+	} else if !cacheCheck.Found {
+		// Add everything
+	}
+
+	return nil
+}
+
 /* ------------------------ SELECT Queries ------------------------ */
 
 // GetPUUID queries summoners table for given user's PUUID
 func GetPUUID(ctx context.Context, pool *pgxpool.Pool, userInfo types.RequestBody) (types.PUUIDCacheCheck, error) {
 	var puuid string
 	var updatedAt time.Time
+	var isPopulated bool
 
 	const query = `
         SELECT puuid, updated_at
@@ -35,6 +59,7 @@ func GetPUUID(ctx context.Context, pool *pgxpool.Pool, userInfo types.RequestBod
 	).Scan(
 		&puuid,
 		&updatedAt,
+		&isPopulated,
 	)
 
 	if err != nil {
@@ -48,9 +73,10 @@ func GetPUUID(ctx context.Context, pool *pgxpool.Pool, userInfo types.RequestBod
 	stale := time.Since(updatedAt) > 24*time.Hour
 
 	return types.PUUIDCacheCheck{
-		Found: true,
-		PUUID: puuid,
-		Stale: stale,
+		Found:       true,
+		PUUID:       puuid,
+		Stale:       stale,
+		IsPopulated: isPopulated,
 	}, nil
 }
 
@@ -121,18 +147,80 @@ func GetMatchIDs(ctx context.Context, pool *pgxpool.Pool, PUUID string) ([]strin
 	return matchIDs, nil
 }
 
-// GetMatchDataByIDs populates a map of matchID: types.LeagueMatch based on
-// if the matchID is cached in the matches table
-func GetMatchDataByIDs(ctx context.Context, pool *pgxpool.Pool, matchIDs []string, matchMap *map[string]*types.LeagueMatch) error {
-	// TODO actually loop over matchMap and check cache status
-	// Remember if the matchID isnt cached, the value in the map should be set to nil
-	return nil
-}
-
 /* ------------------------ INSERT Queries ------------------------ */
 
 // AddMatchData updates the matches table with newly fetched matchData
 func AddMatchData(ctx context.Context, pool *pgxpool.Pool, matchData []types.LeagueMatch) error {
+	return nil
+}
+
+// AddNewSummoners inserts new PUUIDs into the summoners table
+//
+// Only the PUUID, CreatedAt(now), UpdatedAt(now), and IsPopulated(false) columns are populated
+func AddNewSummoners(ctx context.Context, pool *pgxpool.Pool, rows []types.SummonerRow) error {
+	if len(rows) == 0 {
+		return nil
+	}
+
+	const query = `
+		INSERT INTO summoners (
+			puuid,
+			region,
+			game_name,
+			tag_line,
+			profile_icon_id,
+			summoner_level,
+			total_mastery,
+			total_mastery_points,
+			champions_played,
+			created_at,
+			updated_at,
+			is_populated
+		)
+		VALUES (
+			$1, $2, $3, $4, $5,
+			$6, $7, $8, $9, $10,
+			$11, $12
+		)
+		ON CONFLICT (puuid) DO NOTHING
+	`
+
+	batch := &pgx.Batch{}
+	for _, r := range rows {
+		if r.CreatedAt.IsZero() {
+			r.CreatedAt = time.Now()
+		}
+
+		if r.UpdatedAt.IsZero() {
+			r.UpdatedAt = time.Now()
+		}
+
+		batch.Queue(
+			query,
+			r.PUUID,
+			r.Region,
+			r.GameName,
+			r.TagLine,
+			r.ProfileIconID,
+			r.SummonerLevel,
+			r.TotalMastery,
+			r.TotalMasteryPoints,
+			r.ChampionsPlayed,
+			r.CreatedAt,
+			r.UpdatedAt,
+			r.IsPopulated,
+		)
+	}
+
+	br := pool.SendBatch(ctx, batch)
+	defer br.Close()
+
+	for range rows {
+		if _, err := br.Exec(); err != nil {
+			return fmt.Errorf("insert summoiner failed: %w", err)
+		}
+	}
+
 	return nil
 }
 
