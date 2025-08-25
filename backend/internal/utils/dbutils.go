@@ -180,13 +180,56 @@ func AddMatchData(ctx context.Context, pool *pgxpool.Pool, matchData []types.Lea
 	return nil
 }
 
-// AddMasteries updates the masteries table with newly fetched mastery data. Creates one new row per mastery
-func AddMasteries(ctx context.Context, pool *pgxpool.Pool, puuiid string, masteries []types.ChampionMastery) error {
+// AddRanks updates the ranks table with newly fetched rank data. Creates one new row per rank
+func AddRanks(ctx context.Context, pool *pgxpool.Pool, puuid string, ranks []types.LeagueRank) error {
 	return nil
 }
 
-// AddRanks updates the ranks table with newly fetched rank data. Creates one new row per rank
-func AddRanks(ctx context.Context, pool *pgxpool.Pool, puuid string, ranks []types.LeagueRank) error {
+// AddMasteries adds all given masteries for a given PUUID. If a mastery row for that (PUUID, championID) exists, it updates the data for that row.
+func AddMasteries(ctx context.Context, pool *pgxpool.Pool, puuid string, masteries []types.ChampionMastery) error {
+	if puuid == "" || len(masteries) == 0 {
+		return nil
+	}
+
+	const query = `
+		INSERT INTO champion_masteries (
+			puuid,
+			champion_id,
+			champion_level,
+			champion_points
+		)
+		VALUES ($1, $2, $3, $4)
+		ON CONFLICT (puuid, champion_id)
+		DO UPDATE SET
+			champion_level  = EXCLUDED.champion_level,
+			champion_points = EXCLUDED.champion_points
+		WHERE champion_masteries.champion_level  IS DISTINCT FROM EXCLUDED.champion_level
+   		OR champion_masteries.champion_points IS DISTINCT FROM EXCLUDED.champion_points
+	`
+
+	tx, err := pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx) // no-call on successful tx.Commit
+
+	batch := &pgx.Batch{}
+	for _, m := range masteries {
+		batch.Queue(query, puuid, m.ChampionID, m.ChampionLevel, m.ChampionPoints)
+	}
+
+	br := tx.SendBatch(ctx, batch)
+	defer br.Close()
+
+	for range masteries {
+		if _, err := br.Exec(); err != nil {
+			return fmt.Errorf("upsert mastery (puuid=%s) failed: %w", puuid, err)
+		}
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit tx: %w", err)
+	}
 	return nil
 }
 
@@ -261,54 +304,6 @@ func AddNewSummoners(ctx context.Context, pool *pgxpool.Pool, rows []types.Summo
 }
 
 /* ------------------------ UPDATE Queries ------------------------ */
-
-// UpdateMasteries updates all given masteries for a given PUUID. If a mastery row for that (PUUID, championID) does not exist, it creates it.
-func UpdateMasteries(ctx context.Context, pool *pgxpool.Pool, puuid string, masteries []types.ChampionMastery) error {
-	if puuid == "" || len(masteries) == 0 {
-		return nil
-	}
-
-	const query = `
-		INSERT INTO champion_masteries (
-			puuid,
-			champion_id,
-			champion_level,
-			champion_points
-		)
-		VALUES ($1, $2, $3, $4)
-		ON CONFLICT (puuid, champion_id)
-		DO UPDATE SET
-			champion_level  = EXCLUDED.champion_level,
-			champion_points = EXCLUDED.champion_points
-		WHERE champion_masteries.champion_level  IS DISTINCT FROM EXCLUDED.champion_level
-   		OR champion_masteries.champion_points IS DISTINCT FROM EXCLUDED.champion_points
-	`
-
-	tx, err := pool.BeginTx(ctx, pgx.TxOptions{})
-	if err != nil {
-		return fmt.Errorf("begin tx: %w", err)
-	}
-	defer tx.Rollback(ctx) // no-call on successful tx.Commit
-
-	batch := &pgx.Batch{}
-	for _, m := range masteries {
-		batch.Queue(query, puuid, m.ChampionID, m.ChampionLevel, m.ChampionPoints)
-	}
-
-	br := tx.SendBatch(ctx, batch)
-	defer br.Close()
-
-	for range masteries {
-		if _, err := br.Exec(); err != nil {
-			return fmt.Errorf("upsert mastery (puuid=%s) failed: %w", puuid, err)
-		}
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("commit tx: %w", err)
-	}
-	return nil
-}
 
 // UpdateSummonersAll updates all contents of a summoners' table row for each row given in rows
 func UpdateSummonersAll(ctx context.Context, pool *pgxpool.Pool, rows []types.SummonerRow) error {
