@@ -22,40 +22,39 @@ func SyncProfileData(
 	cacheCheck types.PUUIDCacheCheck,
 	userProfile types.LeagueProfilePage,
 ) error {
+	var sr = []types.SummonerRow{{
+		PUUID:              userProfile.PUUID,
+		Region:             userProfile.Region,
+		GameName:           userProfile.GameName,
+		TagLine:            userProfile.TagLine,
+		ProfileIconID:      userProfile.ProfileIconID,
+		SummonerLevel:      userProfile.Level,
+		TotalMastery:       userProfile.MasteryData.TotalMastery,
+		TotalMasteryPoints: userProfile.MasteryData.TotalMasteryPoints,
+		ChampionsPlayed:    userProfile.MasteryData.ChampionsPlayed,
+		UpdatedAt:          time.Now(),
+		IsPopulated:        true,
+	}}
+
+	// summoners table conditional
 	if cacheCheck.Found {
-		// Update summoners table and add everything else
-		var sr = []types.SummonerRow{{
-			PUUID:              userProfile.PUUID,
-			Region:             userProfile.Region,
-			GameName:           userProfile.GameName,
-			TagLine:            userProfile.TagLine,
-			ProfileIconID:      userProfile.ProfileIconID,
-			SummonerLevel:      userProfile.Level,
-			TotalMastery:       userProfile.MasteryData.TotalMastery,
-			TotalMasteryPoints: userProfile.MasteryData.TotalMasteryPoints,
-			ChampionsPlayed:    userProfile.MasteryData.ChampionsPlayed,
-			UpdatedAt:          time.Now(),
-			IsPopulated:        true,
-		}}
 		if err := UpdateSummonersAll(ctx, pool, sr); err != nil {
 			return fmt.Errorf("error calling UpdateSummonersAll: %w", err)
 		}
-
-		if !cacheCheck.IsPopulated {
-			// add everything else
-			if err := AddMasteries(ctx, pool, userProfile.PUUID, userProfile.MasteryData.ChampionMasteries); err != nil {
-				return fmt.Errorf("error calling AddMasteries: %w", err)
-			}
-
-			if err := AddRanks(ctx, pool, userProfile.PUUID, userProfile.Ranks); err != nil {
-				return fmt.Errorf("error calling AddRanks: %w", err)
-			}
-		} else if cacheCheck.Stale {
-			// update everything else
-
+	} else {
+		sr[0].CreatedAt = time.Now()
+		if err := AddNewSummoners(ctx, pool, sr); err != nil {
+			return fmt.Errorf("error calling AddNewSummoners: %w", err)
 		}
-	} else if !cacheCheck.Found {
-		// Add everything
+	}
+
+	// add everything else
+	if err := AddMasteries(ctx, pool, userProfile.PUUID, userProfile.MasteryData.ChampionMasteries); err != nil {
+		return fmt.Errorf("error calling AddMasteries: %w", err)
+	}
+
+	if err := AddRanks(ctx, pool, userProfile.PUUID, userProfile.Ranks); err != nil {
+		return fmt.Errorf("error calling AddRanks: %w", err)
 	}
 
 	return nil
@@ -173,6 +172,16 @@ func GetMatchIDs(ctx context.Context, pool *pgxpool.Pool, PUUID string) ([]strin
 	return matchIDs, nil
 }
 
+func GetMatchesByIDs(ctx context.Context, pool *pgxpool.Pool, ids []string) (map[string]types.MatchRow, error) {
+	out := make(map[string]types.MatchRow, len(ids))
+	return out, nil
+}
+
+func GetParticipantsForMatches(ctx context.Context, pool *pgxpool.Pool, ids []string) (map[string][]types.MatchParticipantRow, error) {
+	out := make(map[string][]types.MatchParticipantRow, len(ids))
+	return out, nil
+}
+
 /* ------------------------ INSERT Queries ------------------------ */
 
 // AddMatchData updates the matches table with newly fetched matchData
@@ -180,8 +189,69 @@ func AddMatchData(ctx context.Context, pool *pgxpool.Pool, matchData []types.Lea
 	return nil
 }
 
-// AddRanks updates the ranks table with newly fetched rank data. Creates one new row per rank
+// AddRanks updates the ranks table for a given PUUID. If a rank row for that (PUUID, queueType) exists, it updates that CHANGED data for that row.
 func AddRanks(ctx context.Context, pool *pgxpool.Pool, puuid string, ranks []types.LeagueRank) error {
+	if puuid == "" || len(ranks) == 0 {
+		return nil
+	}
+
+	query := `
+		INSERT INTO ranks (
+			puuid,
+			queue_type,
+			tier,
+			rank,
+			league_points,
+			wins,
+			losses
+		)
+		VALUES ($1,$2,$3,$4,$5,$6,$7)
+		ON CONFLICT (puuid, queue_type)
+		DO UPDATE SET
+			tier          = EXCLUDED.tier,
+			rank          = EXCLUDED.rank,
+			league_points = EXCLUDED.league_points,
+			wins          = EXCLUDED.wins,
+			losses        = EXCLUDED.losses
+		WHERE ranks.tier          IS DISTINCT FROM EXCLUDED.tier
+		OR ranks.rank          IS DISTINCT FROM EXCLUDED.rank
+		OR ranks.league_points IS DISTINCT FROM EXCLUDED.league_points
+		OR ranks.wins          IS DISTINCT FROM EXCLUDED.wins
+		OR ranks.losses        IS DISTINCT FROM EXCLUDED.losses
+	`
+
+	tx, err := pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx) // no-call on successful tx.Commit
+
+	batch := &pgx.Batch{}
+	for _, r := range ranks {
+		batch.Queue(
+			query,
+			puuid,
+			r.QueueType,
+			r.Tier,
+			r.Rank,
+			r.LeaguePoints,
+			r.Wins,
+			r.Losses,
+		)
+	}
+
+	br := tx.SendBatch(ctx, batch)
+	defer func() { _ = br.Close() }()
+
+	for range ranks {
+		if _, err := br.Exec(); err != nil {
+			return fmt.Errorf("upsert rank (puuid=%s) failed: %w", puuid, err)
+		}
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit tx: %w", err)
+	}
 	return nil
 }
 
