@@ -3,10 +3,13 @@ package types
 import "time"
 
 type PUUIDCacheCheck struct {
-	Found       bool
-	PUUID       string
-	Stale       bool
-	IsPopulated bool
+	Found         bool
+	PUUID         string
+	Stale         bool
+	IsPopulated   bool
+	LastUpdated   time.Time
+	ProfileIconID int
+	Level         int
 }
 
 type CachedProfileCheckList struct {
