@@ -1,6 +1,8 @@
 import sys
 import json
 from pathlib import Path
+from collections import defaultdict
+from pprint import pprint
 
 
 def validate_path(path_str: str) -> bool:
@@ -56,9 +58,17 @@ def main():
         print("Example: /Users/name/Downloads/dragontail-15.14.1/15.14.1/data/en_US/champion.json")
 
     tag_map = map_tags(abs_path=path)
-
-    with open('tag_map.json', 'w', encoding='utf-8') as f:
+    write_path = "../data/tag_map.json"
+    with open(write_path, 'w', encoding='utf-8') as f:
         json.dump(tag_map, f, indent=2)
+    print(f"Wrote tag_map to {write_path}")
+
+    print_map = defaultdict(int)
+    for l in tag_map.values():
+        for c in l:
+            print_map[c] += 1
+
+    pprint(print_map)
 
 
 if __name__ == "__main__":
