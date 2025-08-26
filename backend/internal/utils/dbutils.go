@@ -67,9 +67,11 @@ func GetPUUID(ctx context.Context, pool *pgxpool.Pool, userInfo types.RequestBod
 	var puuid string
 	var updatedAt time.Time
 	var isPopulated bool
+	var iconID int
+	var level int
 
 	const query = `
-        SELECT puuid, updated_at
+        SELECT puuid, updated_at, is_populated, profile_icon_id, summoner_level
         FROM summoners
         WHERE region = $1
           AND lower(game_name) = lower($2)
@@ -85,6 +87,8 @@ func GetPUUID(ctx context.Context, pool *pgxpool.Pool, userInfo types.RequestBod
 		&puuid,
 		&updatedAt,
 		&isPopulated,
+		&iconID,
+		&level,
 	)
 
 	if err != nil {
@@ -98,11 +102,59 @@ func GetPUUID(ctx context.Context, pool *pgxpool.Pool, userInfo types.RequestBod
 	stale := time.Since(updatedAt) > 24*time.Hour
 
 	return types.PUUIDCacheCheck{
-		Found:       true,
-		PUUID:       puuid,
-		Stale:       stale,
-		IsPopulated: isPopulated,
+		Found:         true,
+		PUUID:         puuid,
+		Stale:         stale,
+		IsPopulated:   isPopulated,
+		LastUpdated:   updatedAt,
+		ProfileIconID: iconID,
+		Level:         level,
 	}, nil
+}
+
+func GetSummonerRanks(ctx context.Context, pool *pgxpool.Pool, PUUID string) ([]types.LeagueRank, error) {
+	if PUUID == "" {
+		return []types.LeagueRank{}, nil
+	}
+
+	const q = `
+		SELECT
+			queue_type,
+			tier,
+			rank,
+			league_points,
+			wins,
+			losses
+		FROM ranks
+		WHERE puuid = $1
+		ORDER BY queue_type
+	`
+
+	rows, err := pool.Query(ctx, q, PUUID)
+	if err != nil {
+		return nil, fmt.Errorf("query ranks: %w", err)
+	}
+	defer rows.Close()
+
+	out := make([]types.LeagueRank, 0, 2) // most players have 0–2 queues
+	for rows.Next() {
+		var r types.LeagueRank
+		if err := rows.Scan(
+			&r.QueueType,
+			&r.Tier,
+			&r.Rank,
+			&r.LeaguePoints,
+			&r.Wins,
+			&r.Losses,
+		); err != nil {
+			return nil, fmt.Errorf("scan rank row: %w", err)
+		}
+		out = append(out, r)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate ranks: %w", err)
+	}
+	return out, nil
 }
 
 // GetMasteries queries champion_masteries table for given user's champion masteries
@@ -141,7 +193,7 @@ func GetMasteries(ctx context.Context, pool *pgxpool.Pool, PUUID string) ([]type
 	return championMasteries, nil
 }
 
-// GetMatchIDs queries match_participants table for given user's past 20 Match IDs
+// GetMatchIDs queries match_participants table for given user's past 20 Match IDs.
 func GetMatchIDs(ctx context.Context, pool *pgxpool.Pool, PUUID string) ([]string, error) {
 	const query = `
 		SELECT match_id
@@ -184,7 +236,7 @@ func GetParticipantsForMatches(ctx context.Context, pool *pgxpool.Pool, ids []st
 
 /* ------------------------ INSERT Queries ------------------------ */
 
-// AddMatchData updates the matches table with newly fetched matchData
+// AddMatchData updates the matches and match_participants tables with newly fetched matchData.
 func AddMatchData(ctx context.Context, pool *pgxpool.Pool, matchData []types.LeagueMatch) error {
 	return nil
 }
@@ -213,7 +265,7 @@ func AddRanks(ctx context.Context, pool *pgxpool.Pool, puuid string, ranks []typ
 			league_points = EXCLUDED.league_points,
 			wins          = EXCLUDED.wins,
 			losses        = EXCLUDED.losses
-		WHERE ranks.tier          IS DISTINCT FROM EXCLUDED.tier
+		WHERE ranks.tier       IS DISTINCT FROM EXCLUDED.tier
 		OR ranks.rank          IS DISTINCT FROM EXCLUDED.rank
 		OR ranks.league_points IS DISTINCT FROM EXCLUDED.league_points
 		OR ranks.wins          IS DISTINCT FROM EXCLUDED.wins
@@ -273,7 +325,7 @@ func AddMasteries(ctx context.Context, pool *pgxpool.Pool, puuid string, masteri
 		DO UPDATE SET
 			champion_level  = EXCLUDED.champion_level,
 			champion_points = EXCLUDED.champion_points
-		WHERE champion_masteries.champion_level  IS DISTINCT FROM EXCLUDED.champion_level
+		WHERE champion_masteries.champion_level IS DISTINCT FROM EXCLUDED.champion_level
    		OR champion_masteries.champion_points IS DISTINCT FROM EXCLUDED.champion_points
 	`
 
