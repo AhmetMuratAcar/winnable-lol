@@ -293,12 +293,15 @@ func AddRanks(ctx context.Context, pool *pgxpool.Pool, puuid string, ranks []typ
 	}
 
 	br := tx.SendBatch(ctx, batch)
-	defer func() { _ = br.Close() }()
 
 	for range ranks {
 		if _, err := br.Exec(); err != nil {
 			return fmt.Errorf("upsert rank (puuid=%s) failed: %w", puuid, err)
 		}
+	}
+
+	if err := br.Close(); err != nil {
+		return fmt.Errorf("close batch: %w", err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
@@ -341,12 +344,15 @@ func AddMasteries(ctx context.Context, pool *pgxpool.Pool, puuid string, masteri
 	}
 
 	br := tx.SendBatch(ctx, batch)
-	defer br.Close()
 
 	for range masteries {
 		if _, err := br.Exec(); err != nil {
 			return fmt.Errorf("upsert mastery (puuid=%s) failed: %w", puuid, err)
 		}
+	}
+
+	if err := br.Close(); err != nil {
+		return fmt.Errorf("close batch: %w", err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
