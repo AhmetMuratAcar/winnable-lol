@@ -41,7 +41,6 @@ type LeagueMatchParticipant struct {
 	Items                       []int  `json:"items"`
 	Kills                       int    `json:"kills"`
 	ParticipantIndex            int    `json:"participantIndex"`
-	Team                        int    `json:"team"`
 	ProfileIconID               int    `json:"profileIcon"`
 	PUUID                       string `json:"puuid"`
 	RiotIDGameName              string `json:"riotIdGameName"`
@@ -49,6 +48,7 @@ type LeagueMatchParticipant struct {
 	Summoner1ID                 int    `json:"summoner1Id"`
 	Summoner2ID                 int    `json:"summoner2Id"`
 	SummonerLevel               int    `json:"summonerLevel"`
+	Team                        int    `json:"team"`
 	TeamPosition                string `json:"teamPosition"`
 	TotalDamageDealtToChampions int    `json:"totalDamageDealtToChampions"`
 	TotalMinionsKilled          int    `json:"totalMinionsKilled"`

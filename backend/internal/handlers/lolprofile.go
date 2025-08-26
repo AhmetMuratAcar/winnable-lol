@@ -73,6 +73,8 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if cacheCheck.Found {
 		log.Print("user is cached, fetching PUUID from DB")
 		userProfile.PUUID = cacheCheck.PUUID
+		userProfile.ProfileIconID = cacheCheck.ProfileIconID
+		userProfile.Level = cacheCheck.Level
 
 		if !cacheCheck.Stale && cacheCheck.IsPopulated {
 			// guaranteed to have good data to return
@@ -87,13 +89,9 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					log.Printf("Error marking summoner as stale: %v", err)
 				}
 
-				userProfile = types.LeagueProfilePage{
-					PUUID:    cacheCheck.PUUID,
-					GameName: req.GameName,
-					TagLine:  req.TagLine,
-					Region:   req.Region,
-				}
 				cacheCheck.IsPopulated = false
+				cacheCheck.Found = false
+				cacheCheck.Stale = true
 			}
 		}
 	} else {
@@ -161,7 +159,9 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Printf("Error querying DB for past match IDs: %v", err)
 		}
-	} else {
+	}
+
+	if len(matchIDs) < 20 {
 		matchIDs, err = client.GetSummonerMatchIDs(userProfile.PUUID, startIndex, matchCount)
 		if err != nil {
 			log.Printf("Error requesting past match IDs from Riot: %v", err)
@@ -169,19 +169,13 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Print("MatchIDs fetch successful")
 
-	matchDataMap := make(map[string]*types.LeagueMatch)
-	if len(matchIDs) != 0 {
-		matchDataMap, err = lolprofilesvc.ConstructMatchDataMap(ctx, h.pool, matchIDs)
-		if err != nil {
-			log.Printf(
-				"Error constructing matchDataMap PUUID: %s\nmatchIDs: %s",
-				userProfile.PUUID,
-				matchIDs,
-			)
-			userProfile.MatchData = nil
-		}
-	} else {
-		userProfile.MatchData = nil
+	matchDataMap, err := lolprofilesvc.ConstructMatchDataMap(ctx, h.pool, matchIDs)
+	if err != nil {
+		log.Printf(
+			"Error constructing matchDataMap PUUID: %s\nmatchIDs: %s",
+			userProfile.PUUID,
+			matchIDs,
+		)
 	}
 
 	// finding non-cached matches
@@ -217,8 +211,14 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Print("Match data successfully added")
 
 	// Level and icon ID calls
+	var match types.LeagueMatch
 	if len(userProfile.MatchData) > 0 {
-		match := userProfile.MatchData[0]
+		match = userProfile.MatchData[0]
+	}
+	endTime := time.UnixMilli(int64(match.GameStartTimestamp)).
+		Add(time.Duration(match.GameDuration) * time.Second)
+
+	if endTime.After(cacheCheck.LastUpdated) && len(userProfile.MatchData) > 0 {
 		var userIndex int
 		for _, v := range match.Participants {
 			if v.PUUID == userProfile.PUUID {
@@ -267,7 +267,12 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	) {
 		ctx, cancel := context.WithTimeout(context.WithoutCancel(parent), 30*time.Second)
 		defer cancel()
-		
+
+		// update/add current user's data
+		if err := utils.SyncProfileData(ctx, pool, check, profile); err != nil {
+			log.Printf("SyncProfileData error: %v", err)
+		}
+
 		// add all new PUUIDs found for matches to summoners
 		idMap := make(map[string]bool)
 		newRows := make([]types.SummonerRow, 0, len(profile.MatchData)*9)
@@ -276,15 +281,15 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				id := p.PUUID
 				if _, ok := idMap[id]; !ok && id != profile.PUUID {
 					row := types.SummonerRow{
-						PUUID: id,
-						Region: profile.Region,
-						GameName: p.RiotIDGameName,
-						TagLine: p.RiotIDTagline,
+						PUUID:         id,
+						Region:        profile.Region,
+						GameName:      p.RiotIDGameName,
+						TagLine:       p.RiotIDTagline,
 						ProfileIconID: p.ProfileIconID,
 						SummonerLevel: p.SummonerLevel,
-						CreatedAt: time.Now(),
-						UpdatedAt: time.Now(),
-						IsPopulated: false,
+						CreatedAt:     time.Now(),
+						UpdatedAt:     time.Now(),
+						IsPopulated:   false,
 					}
 					newRows = append(newRows, row)
 					idMap[id] = true
@@ -294,11 +299,9 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		if err := utils.AddNewSummoners(ctx, pool, newRows); err != nil {
 			log.Printf("AddNewSummoners error: %v", err)
-		}
-
-		// update/add current user's data
-		if err := utils.SyncProfileData(ctx, pool, check, profile); err != nil {
-			log.Printf("SyncProfileData error: %v", err)
+			return
+			// Early returning here because matches and match_participants tables rely on
+			// PUUIDs in the summoners table as foreign keys for their entries.
 		}
 
 		// update matches tables
@@ -307,6 +310,8 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				log.Printf("AddMatchData error: %v", err)
 			}
 		}
+
+		log.Print("DB successfully updated")
 	}(ctx, pool, checkCopy, profileCopy, toAddCopy)
 
 	w.Header().Set("Content-Type", "application/json")
