@@ -55,6 +55,7 @@ type MatchParticipantRow struct {
 	RiotIDTagLine        string
 	SummonerLevelAtMatch int
 	ProfileIconAtMatch   int
+	GameStart            time.Time
 }
 
 type SummonerRow struct {

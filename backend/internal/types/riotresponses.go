@@ -154,31 +154,17 @@ type RawMatchResponse struct {
 			MagicDamageDealt            int    `json:"magicDamageDealt"`
 			MagicDamageDealtToChampions int    `json:"magicDamageDealtToChampions"`
 			MagicDamageTaken            int    `json:"magicDamageTaken"`
-			Missions                    struct {
-				PlayerScore0  int `json:"playerScore0"`
-				PlayerScore1  int `json:"playerScore1"`
-				PlayerScore2  int `json:"playerScore2"`
-				PlayerScore3  int `json:"playerScore3"`
-				PlayerScore4  int `json:"playerScore4"`
-				PlayerScore5  int `json:"playerScore5"`
-				PlayerScore6  int `json:"playerScore6"`
-				PlayerScore7  int `json:"playerScore7"`
-				PlayerScore8  int `json:"playerScore8"`
-				PlayerScore9  int `json:"playerScore9"`
-				PlayerScore10 int `json:"playerScore10"`
-				PlayerScore11 int `json:"playerScore11"`
-			} `json:"missions"`
-			NeedVisionPings         int `json:"needVisionPings"`
-			NeutralMinionsKilled    int `json:"neutralMinionsKilled"`
-			NexusKills              int `json:"nexusKills"`
-			NexusLost               int `json:"nexusLost"`
-			NexusTakedowns          int `json:"nexusTakedowns"`
-			ObjectivesStolen        int `json:"objectivesStolen"`
-			ObjectivesStolenAssists int `json:"objectivesStolenAssists"`
-			OnMyWayPings            int `json:"onMyWayPings"`
-			ParticipantID           int `json:"participantId"`
-			PentaKills              int `json:"pentaKills"`
-			Perks                   struct {
+			NeedVisionPings             int    `json:"needVisionPings"`
+			NeutralMinionsKilled        int    `json:"neutralMinionsKilled"`
+			NexusKills                  int    `json:"nexusKills"`
+			NexusLost                   int    `json:"nexusLost"`
+			NexusTakedowns              int    `json:"nexusTakedowns"`
+			ObjectivesStolen            int    `json:"objectivesStolen"`
+			ObjectivesStolenAssists     int    `json:"objectivesStolenAssists"`
+			OnMyWayPings                int    `json:"onMyWayPings"`
+			ParticipantID               int    `json:"participantId"`
+			PentaKills                  int    `json:"pentaKills"`
+			Perks                       struct {
 				StatPerks struct {
 					Defense int `json:"defense"`
 					Flex    int `json:"flex"`
