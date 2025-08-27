@@ -43,6 +43,7 @@ func ToLeagueMatch(raw types.RawMatchResponse) types.LeagueMatch {
 			p.Item3,
 			p.Item4,
 			p.Item5,
+			p.Item6,
 		}
 
 		if i < participantCount/2 {
