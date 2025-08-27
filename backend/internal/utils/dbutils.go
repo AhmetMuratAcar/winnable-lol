@@ -226,11 +226,171 @@ func GetMatchIDs(ctx context.Context, pool *pgxpool.Pool, PUUID string) ([]strin
 
 func GetMatchesByIDs(ctx context.Context, pool *pgxpool.Pool, ids []string) (map[string]types.MatchRow, error) {
 	out := make(map[string]types.MatchRow, len(ids))
+	if len(ids) == 0 {
+		return out, nil
+	}
+
+	const query = `
+		SELECT
+			match_id,
+			end_of_game_result,
+			game_duration_sec,
+			game_start,
+			game_version,
+			queue_id,
+			winning_team,
+			bans_blue,
+			bans_red
+		FROM matches
+		WHERE match_id = ANY($1)
+	`
+
+	rows, err := pool.Query(ctx, query, ids)
+	if err != nil {
+		return nil, fmt.Errorf("query matches: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			mID            string
+			endRes         string
+			gameDur        int
+			gameStart      time.Time
+			version        string
+			queueID        int
+			winningTeamI16 int16
+			bansBlue       []int
+			bansRed        []int
+		)
+		if err := rows.Scan(
+			&mID, &endRes, &gameDur, &gameStart, &version, &queueID,
+			&winningTeamI16, &bansBlue, &bansRed,
+		); err != nil {
+			return nil, fmt.Errorf("scan match row: %w", err)
+		}
+
+		out[mID] = types.MatchRow{
+			MatchID:         mID,
+			EndOfGameResult: endRes,
+			GameDurationSec: gameDur,
+			GameStart:       gameStart,
+			GameVersion:     version,
+			QueueID:         queueID,
+			WinningTeam:     int(winningTeamI16),
+			BansBlue:        bansBlue,
+			BansRed:         bansRed,
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate matches: %w", err)
+	}
+
 	return out, nil
 }
 
 func GetParticipantsForMatches(ctx context.Context, pool *pgxpool.Pool, ids []string) (map[string][]types.MatchParticipantRow, error) {
 	out := make(map[string][]types.MatchParticipantRow, len(ids))
+
+	const query = `
+		SELECT
+			match_id,
+			puuid,
+			participant_index,
+			team,
+			champion_id,
+			champ_level,
+			kills,
+			deaths,
+			assists,
+			gold_earned,
+			total_damage_to_champs,
+			total_minions_killed,
+			vision_score,
+			items,
+			summoner1_id,
+			summoner2_id,
+			team_position,
+			riot_id_game_name,
+			riot_id_tag_line,
+			summoner_level_at_match,
+			profile_icon_at_match,
+			game_start
+		FROM match_participants
+		WHERE match_id = ANY($1)
+		ORDER BY match_id, participant_index
+	`
+
+	rows, err := pool.Query(ctx, query, ids)
+	if err != nil {
+		return nil, fmt.Errorf("query match_participants: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			mID                string
+			puuid              string
+			participantIdxI16  int16
+			teamI16            int16
+			championID         int
+			champLevel         int
+			kills              int
+			deaths             int
+			assists            int
+			goldEarned         int
+			totalDmgToChamps   int
+			totalMinions       int
+			visionScore        int
+			items              []int
+			s1ID               int
+			s2ID               int
+			teamPosition       string
+			riotGameName       string
+			riotTagLine        string
+			summonerLevelMatch int
+			profileIconMatch   int
+			gameStart          time.Time
+		)
+
+		if err := rows.Scan(
+			&mID, &puuid, &participantIdxI16, &teamI16, &championID, &champLevel,
+			&kills, &deaths, &assists, &goldEarned, &totalDmgToChamps, &totalMinions,
+			&visionScore, &items, &s1ID, &s2ID, &teamPosition, &riotGameName,
+			&riotTagLine, &summonerLevelMatch, &profileIconMatch, &gameStart,
+		); err != nil {
+			return nil, fmt.Errorf("scan participant row: %w", err)
+		}
+
+		out[mID] = append(out[mID], types.MatchParticipantRow{
+			MatchID:              mID,
+			PUUID:                puuid,
+			ParticipantIndex:     int(participantIdxI16),
+			Team:                 int(teamI16),
+			ChampionID:           championID,
+			ChampLevel:           champLevel,
+			Kills:                kills,
+			Deaths:               deaths,
+			Assists:              assists,
+			GoldEarned:           goldEarned,
+			TotalDamageToChamps:  totalDmgToChamps,
+			TotalMinionsKilled:   totalMinions,
+			VisionScore:          visionScore,
+			Items:                items,
+			Summoner1ID:          s1ID,
+			Summoner2ID:          s2ID,
+			TeamPosition:         teamPosition,
+			RiotIDGameName:       riotGameName,
+			RiotIDTagLine:        riotTagLine,
+			SummonerLevelAtMatch: summonerLevelMatch,
+			ProfileIconAtMatch:   profileIconMatch,
+			GameStart:            gameStart,
+		})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate match_participants: %w", err)
+	}
+
 	return out, nil
 }
 
