@@ -269,7 +269,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		defer cancel()
 
 		// update/add current user's data
-		if err := utils.SyncProfileData(ctx, pool, check, profile); err != nil {
+		if err := utils.SyncSummonerProfileData(ctx, pool, check, profile); err != nil {
 			log.Printf("SyncProfileData error: %v", err)
 		}
 

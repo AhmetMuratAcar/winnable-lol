@@ -16,7 +16,7 @@ import (
 // SyncProfileData updates all of a league profile's data in the DB.
 //
 // Updates tables: summoners, champion_masteries, ranks
-func SyncProfileData(
+func SyncSummonerProfileData(
 	ctx context.Context,
 	pool *pgxpool.Pool,
 	cacheCheck types.PUUIDCacheCheck,
@@ -238,6 +238,143 @@ func GetParticipantsForMatches(ctx context.Context, pool *pgxpool.Pool, ids []st
 
 // AddMatchData updates the matches and match_participants tables with newly fetched matchData.
 func AddMatchData(ctx context.Context, pool *pgxpool.Pool, matchData []types.LeagueMatch) error {
+	if len(matchData) == 0 {
+		return nil
+	}
+
+	const insertMatch = `
+		INSERT INTO matches (
+			match_id,
+			end_of_game_result,
+			game_duration_sec,
+			game_start,
+			game_version,
+			queue_id,
+			winning_team,
+			bans_blue,
+			bans_red
+		)
+		VALUES ($1,$2,$3,$4,$5,$6,$7::smallint,$8::int[],$9::int[])
+	`
+
+	const insertParticipant = `
+		INSERT INTO match_participants (
+			match_id,
+			puuid,
+			participant_index,
+			team,
+			champion_id,
+			champ_level,
+			kills,
+			deaths,
+			assists,
+			gold_earned,
+			total_damage_to_champs,
+			total_minions_killed,
+			vision_score,
+			items,
+			summoner1_id,
+			summoner2_id,
+			team_position,
+			riot_id_game_name,
+			riot_id_tag_line,
+			summoner_level_at_match,
+			profile_icon_at_match,
+			game_start
+		)
+		VALUES (
+			$1,$2,$3,$4::smallint,$5,$6,$7,$8,$9,$10,$11,$12,$13,
+			$14::int[],
+			$15,$16,$17,$18,$19,$20,$21,$22
+		)
+	`
+
+	tx, err := pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	batch := &pgx.Batch{}
+
+	for _, m := range matchData {
+		// Riot timestamps are milliseconds since epoch
+		gameStart := time.UnixMilli(int64(m.GameStartTimestamp)).UTC()
+
+		var bansBlue, bansRed []int
+		if len(m.Bans) >= 1 {
+			bansBlue = m.Bans[0]
+		}
+		if len(m.Bans) >= 2 {
+			bansRed = m.Bans[1]
+		}
+
+		// matches row
+		batch.Queue(
+			insertMatch,
+			m.MatchID,
+			m.EndOfGameResult,
+			m.GameDuration,
+			gameStart,
+			m.GameVersion,
+			m.QueueId,
+			m.WinningTeam,
+			bansBlue,
+			bansRed,
+		)
+
+		// match_participants row
+		for _, p := range m.Participants {
+			batch.Queue(
+				insertParticipant,
+				m.MatchID,
+				p.PUUID,
+				p.ParticipantIndex,
+				p.Team,
+				p.ChampionID,
+				p.ChampLevel,
+				p.Kills,
+				p.Deaths,
+				p.Assists,
+				p.GoldEarned,
+				p.TotalDamageDealtToChampions,
+				p.TotalMinionsKilled,
+				p.VisionScore,
+				p.Items,
+				p.Summoner1ID,
+				p.Summoner2ID,
+				p.TeamPosition,
+				p.RiotIDGameName,
+				p.RiotIDTagline,
+				p.SummonerLevel,
+				p.ProfileIconID,
+				gameStart,
+			)
+		}
+	}
+
+	br := tx.SendBatch(ctx, batch)
+	totalStmts := 0
+	for _, m := range matchData {
+		totalStmts++                      // one per match
+		totalStmts += len(m.Participants) // one per participant
+	}
+
+	for i := 0; i < totalStmts; i++ {
+		if _, err := br.Exec(); err != nil {
+			_ = br.Close()
+			return fmt.Errorf("batch exec failed: %w", err)
+		}
+	}
+
+	if err := br.Close(); err != nil {
+		return fmt.Errorf("close batch: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit tx: %w", err)
+	}
+
 	return nil
 }
 
