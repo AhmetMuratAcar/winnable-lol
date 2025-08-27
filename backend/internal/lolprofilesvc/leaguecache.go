@@ -2,8 +2,7 @@ package lolprofilesvc
 
 import (
 	"context"
-	"log"
-	"time"
+	"fmt"
 
 	"winnable/internal/types"
 	"winnable/internal/utils"
@@ -20,119 +19,106 @@ type RiotAPI interface {
 	GetSummonerRanks(puuid, region string) ([]types.LeagueRank, error)
 }
 
-func CachedProfileConstructor(ctx context.Context, pool *pgxpool.Pool, profile *types.LeagueProfilePage) (types.CachedProfileCheckList, error) {
-	return types.CachedProfileCheckList{}, nil
+// CachedProfileConstructor fills out the MasteryData, and Ranks fields of a cached LeagueProfilePage.
+func CachedProfileConstructor(ctx context.Context, pool *pgxpool.Pool, profile types.LeagueProfilePage) (types.LeagueProfilePage, error) {
+	var err error
+	out := profile
+
+	out.MasteryData.ChampionMasteries, err = utils.GetMasteries(ctx, pool, out.PUUID)
+	if err != nil {
+		return profile, fmt.Errorf("error calling GetMasteries in CachedProfileConstructor: %w", err)
+	}
+
+	for _, c := range out.MasteryData.ChampionMasteries {
+		out.MasteryData.TotalMastery += c.ChampionLevel
+		out.MasteryData.TotalMasteryPoints += c.ChampionPoints
+	}
+	out.MasteryData.ChampionsPlayed = len(out.MasteryData.ChampionMasteries)
+
+	out.Ranks, err = utils.GetSummonerRanks(ctx, pool, out.PUUID)
+	if err != nil {
+		return profile, fmt.Errorf("error calling GetSummonerRanks in CachedProfileConstructor: %w", err)
+	}
+
+	return out, nil
 }
 
 func ConstructMatchDataMap(ctx context.Context, pool *pgxpool.Pool, matchIDs []string) (map[string]*types.LeagueMatch, error) {
-	matchDataMap := make(map[string]*types.LeagueMatch)
-	return matchDataMap, nil
+	out := make(map[string]*types.LeagueMatch, len(matchIDs))
+	if len(matchIDs) == 0 {
+		return out, nil
+	}
+	// Initialize all IDs with nil so caller can detect missing ones.
+	for _, id := range matchIDs {
+		out[id] = nil
+	}
+
+	// 1) Batch load matches
+	matches, err := utils.GetMatchesByIDs(ctx, pool, matchIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	// 2) Batch load participants grouped by match
+	participantsByMatch, err := utils.GetParticipantsForMatches(ctx, pool, matchIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	// 3) Assemble LeagueMatch for each found match
+	for mID, m := range matches {
+		ps := participantsByMatch[mID] // may be empty slice (shouldn’t happen normally)
+		lm := assembleLeagueMatch(m, ps)
+		// copy to new var to safely take address in loop
+		v := lm
+		out[mID] = &v
+	}
+
+	return out, nil
 }
 
-func FillLoLProfileCacheGaps(
-	checklist types.CachedProfileCheckList,
-	profile *types.LeagueProfilePage,
-	client RiotAPI,
-	ctx context.Context,
-	pool *pgxpool.Pool,
-) error {
-	detachedCtx, cancel := context.WithTimeout(
-		context.WithoutCancel(ctx),
-		5*time.Second,
-	)
-	defer cancel()
-
-	var err error
-	if !checklist.Masteries {
-		// checklist.Masteries is only false if NO masteries are present
-		championMasteries, err := client.GetSummonerMastery(profile.Region, profile.PUUID)
-		if err != nil {
-			log.Printf(
-				"Error requesting masteries in FillLoLProfileCacheGaps:\nPUUID:%s\nError: %v",
-				profile.PUUID,
-				err,
-			)
-		}
-
-		for _, c := range championMasteries {
-			profile.MasteryData.TotalMastery += c.ChampionLevel
-			profile.MasteryData.TotalMasteryPoints += c.ChampionPoints
-		}
-		profile.MasteryData.ChampionsPlayed = len(championMasteries)
-		profile.MasteryData.ChampionMasteries = championMasteries
-
-		// TODO: async update DB with this info
+// assembleLeagueMatch converts DB rows -> API struct.
+// Adjust field assignments to your actual types.LeagueMatch definition.
+func assembleLeagueMatch(m types.MatchRow, ps []types.MatchParticipantRow) types.LeagueMatch {
+	lm := types.LeagueMatch{
+		EndOfGameResult:    m.EndOfGameResult,
+		GameDuration:       m.GameDurationSec,
+		GameStartTimestamp: int(m.GameStart.UnixMilli()),
+		GameVersion:        m.GameVersion,
+		MatchID:            m.MatchID,
+		ParticipantPUUIDs:  make([]string, 0, len(ps)),
+		Participants:       make([]types.LeagueMatchParticipant, 0, len(ps)),
+		QueueId:            m.QueueID,
+		Bans:               [][]int{m.BansBlue, m.BansRed},
+		WinningTeam:        m.WinningTeam,
 	}
 
-	if !checklist.Matches {
-		numCachedMatches := len(profile.MatchData)
-		matchIdIndexMap := make(map[string]int)
-		if numCachedMatches > 0 {
-			for i, m := range profile.MatchData {
-				matchIdIndexMap[m.MatchID] = i
-			}
-		}
+	for _, p := range ps {
+		lm.Participants = append(lm.Participants, types.LeagueMatchParticipant{
+			Assists:                     p.Assists,
+			ChampionID:                  p.ChampionID,
+			ChampLevel:                  p.ChampLevel,
+			Deaths:                      p.Deaths,
+			GoldEarned:                  p.GoldEarned,
+			Items:                       p.Items,
+			Kills:                       p.Kills,
+			ParticipantIndex:            p.ParticipantIndex,
+			ProfileIconID:               p.ProfileIconAtMatch,
+			PUUID:                       p.PUUID,
+			RiotIDGameName:              p.RiotIDGameName,
+			RiotIDTagline:               p.RiotIDTagLine,
+			Summoner1ID:                 p.Summoner1ID,
+			Summoner2ID:                 p.Summoner2ID,
+			SummonerLevel:               p.SummonerLevelAtMatch,
+			Team:                        p.Team,
+			TeamPosition:                p.TeamPosition,
+			TotalDamageDealtToChampions: p.TotalDamageToChamps,
+			TotalMinionsKilled:          p.TotalMinionsKilled,
+			VisionScore:                 p.VisionScore,
+		})
 
-		startIndex := 0
-		count := 20
-		matchIDs, err := client.GetSummonerMatchIDs(profile.PUUID, startIndex, count)
-		if err != nil {
-			log.Printf(
-				"Error requesting past match IDs in FillLoLProfileCacheGaps: \nPUUID%s\nError: %v",
-				profile.PUUID,
-				err,
-			)
-		}
-
-		res := make([]types.LeagueMatch, 0, 20)
-		toAdd := make([]types.LeagueMatch, 0, 20)
-		for _, id := range matchIDs {
-			if index, ok := matchIdIndexMap[id]; ok {
-				res = append(res, profile.MatchData[index])
-			} else {
-				matchData, err := client.GetMatchData(id)
-				if err != nil {
-					log.Printf(
-						"Error fetching matchID %s in FillLoLProfileCacheGaps\nError: %v",
-						id,
-						err,
-					)
-					continue
-				}
-
-				res = append(res, matchData)
-				toAdd = append(toAdd, matchData)
-			}
-		}
-		profile.MatchData = res
-
-		go func(batch []types.LeagueMatch) {
-			if err := utils.AddMatchData(detachedCtx, pool, batch); err != nil {
-				log.Printf("async AddMatchData error in FillLoLProfileCacheGaps: %v", err)
-			}
-		}(toAdd)
+		lm.ParticipantPUUIDs = append(lm.ParticipantPUUIDs, p.PUUID)
 	}
 
-	if !checklist.Ranks {
-		profile.Ranks, err = client.GetSummonerRanks(profile.PUUID, profile.Region)
-		if err != nil {
-			log.Printf("error fetching summoner ranks in FillLoLProfileCacheGaps. Error: %v", err)
-		}
-
-		// TODO: async update DB with this info
-	}
-
-	if !checklist.ProfileIcon || !checklist.Level {
-		profile.ProfileIconID, profile.Level, err = client.GetSummonerIconAndLevel(
-			profile.PUUID,
-			profile.Region,
-		)
-		if err != nil {
-			log.Printf("error fetching summoner icon and level in FillLoLProfileCacheGaps. Error: %v", err)
-		}
-
-		// TODO: async update DB with this info
-	}
-
-	return nil
+	return lm
 }
