@@ -59,7 +59,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Region:   req.Region,
 	}
 
-	cacheCheck, err := utils.GetPUUID(ctx, h.pool, req)
+	cacheCheck, err := utils.SummonerCacheCheck(ctx, h.pool, req)
 	if err != nil {
 		log.Printf(
 			"Error querying DB for user's PUUID for GameName: %s Tagline: %s\nError: %v\n",

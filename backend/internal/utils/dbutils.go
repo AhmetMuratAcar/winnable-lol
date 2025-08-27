@@ -63,7 +63,7 @@ func SyncProfileData(
 /* ------------------------ SELECT Queries ------------------------ */
 
 // GetPUUID queries summoners table for given user's PUUID
-func GetPUUID(ctx context.Context, pool *pgxpool.Pool, userInfo types.RequestBody) (types.PUUIDCacheCheck, error) {
+func SummonerCacheCheck(ctx context.Context, pool *pgxpool.Pool, userInfo types.RequestBody) (types.PUUIDCacheCheck, error) {
 	var puuid string
 	var updatedAt time.Time
 	var isPopulated bool
