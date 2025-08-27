@@ -77,8 +77,7 @@ func ConstructMatchDataMap(ctx context.Context, pool *pgxpool.Pool, matchIDs []s
 	return out, nil
 }
 
-// assembleLeagueMatch converts DB rows -> API struct.
-// Adjust field assignments to your actual types.LeagueMatch definition.
+// assembleLeagueMatch converts DB rows -> API struct
 func assembleLeagueMatch(m types.MatchRow, ps []types.MatchParticipantRow) types.LeagueMatch {
 	lm := types.LeagueMatch{
 		EndOfGameResult:    m.EndOfGameResult,
