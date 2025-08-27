@@ -76,7 +76,7 @@ type LeagueProfilePage struct {
 	MatchData     []LeagueMatch `json:"matchData"`
 }
 
-// Removed the challenges data from the RawMatchResponse struct because the
+// Removed the challenges and PlayerScore data from the RawMatchResponse struct because the
 // Riot docs straight up lie and define some fields as int when they can sometimes
 // be sent over as a float. Don't need it, just nuked it all to avoid the headache.
 type RawMatchResponse struct {
@@ -98,18 +98,6 @@ type RawMatchResponse struct {
 		GameVersion        string `json:"gameVersion"`
 		MapID              int    `json:"mapId"`
 		Participants       []struct {
-			PlayerScore0                int    `json:"PlayerScore0"`
-			PlayerScore1                int    `json:"PlayerScore1"`
-			PlayerScore10               int    `json:"PlayerScore10"`
-			PlayerScore11               int    `json:"PlayerScore11"`
-			PlayerScore2                int    `json:"PlayerScore2"`
-			PlayerScore3                int    `json:"PlayerScore3"`
-			PlayerScore4                int    `json:"PlayerScore4"`
-			PlayerScore5                int    `json:"PlayerScore5"`
-			PlayerScore6                int    `json:"PlayerScore6"`
-			PlayerScore7                int    `json:"PlayerScore7"`
-			PlayerScore8                int    `json:"PlayerScore8"`
-			PlayerScore9                int    `json:"PlayerScore9"`
 			AllInPings                  int    `json:"allInPings"`
 			AssistMePings               int    `json:"assistMePings"`
 			Assists                     int    `json:"assists"`
