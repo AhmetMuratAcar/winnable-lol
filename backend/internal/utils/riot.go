@@ -36,6 +36,24 @@ func ToLeagueMatch(raw types.RawMatchResponse) types.LeagueMatch {
 			VisionScore:                 p.VisionScore,
 		}
 
+		curr.Runes = types.SummonerRunes{
+			StatPerks: types.StatPerks{
+				Defense: p.Perks.StatPerks.Defense,
+				Flex:    p.Perks.StatPerks.Flex,
+				Offense: p.Perks.StatPerks.Offense,
+			},
+			MainTree: types.MainRuneTree{
+				Keystone: p.Perks.Styles[0].Selections[0].Perk,
+				Rune1:    p.Perks.Styles[0].Selections[1].Perk,
+				Rune2:    p.Perks.Styles[0].Selections[2].Perk,
+				Rune3:    p.Perks.Styles[0].Selections[3].Perk,
+			},
+			SecondaryTree: types.SecondaryRuneTree{
+				Rune1: p.Perks.Styles[1].Selections[0].Perk,
+				Rune2: p.Perks.Styles[1].Selections[1].Perk,
+			},
+		}
+
 		curr.Items = []int{
 			p.Item0,
 			p.Item1,

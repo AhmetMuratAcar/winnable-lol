@@ -138,6 +138,8 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		userProfile.MasteryData.ChampionMasteries = championMasteries
 	}
 
+	// TODO: mastery graph data generation
+
 	// Rank Calls
 	if !cacheCheck.Found || !cacheCheck.IsPopulated || cacheCheck.Stale {
 		userProfile.Ranks, err = client.GetSummonerRanks(userProfile.PUUID, userProfile.Region)
@@ -309,9 +311,10 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if err := utils.AddMatchData(ctx, pool, newMatches); err != nil {
 				log.Printf("AddMatchData error: %v", err)
 			}
+		} else {
+			log.Print("DB successfully updated")
 		}
 
-		log.Print("DB successfully updated")
 	}(ctx, pool, checkCopy, profileCopy, toAddCopy)
 
 	w.Header().Set("Content-Type", "application/json")

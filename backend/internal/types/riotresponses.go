@@ -33,26 +33,51 @@ type LeagueMatch struct {
 }
 
 type LeagueMatchParticipant struct {
-	Assists                     int    `json:"assists"`
-	ChampionID                  int    `json:"championId"`
-	ChampLevel                  int    `json:"champLevel"`
-	Deaths                      int    `json:"deaths"`
-	GoldEarned                  int    `json:"goldEarned"`
-	Items                       []int  `json:"items"`
-	Kills                       int    `json:"kills"`
-	ParticipantIndex            int    `json:"participantIndex"`
-	ProfileIconID               int    `json:"profileIcon"`
-	PUUID                       string `json:"puuid"`
-	RiotIDGameName              string `json:"riotIdGameName"`
-	RiotIDTagline               string `json:"riotIdTagline"`
-	Summoner1ID                 int    `json:"summoner1Id"`
-	Summoner2ID                 int    `json:"summoner2Id"`
-	SummonerLevel               int    `json:"summonerLevel"`
-	Team                        int    `json:"team"`
-	TeamPosition                string `json:"teamPosition"`
-	TotalDamageDealtToChampions int    `json:"totalDamageDealtToChampions"`
-	TotalMinionsKilled          int    `json:"totalMinionsKilled"`
-	VisionScore                 int    `json:"visionScore"`
+	Assists                     int           `json:"assists"`
+	ChampionID                  int           `json:"championId"`
+	ChampLevel                  int           `json:"champLevel"`
+	Deaths                      int           `json:"deaths"`
+	GoldEarned                  int           `json:"goldEarned"`
+	Items                       []int         `json:"items"`
+	Kills                       int           `json:"kills"`
+	ParticipantIndex            int           `json:"participantIndex"`
+	ProfileIconID               int           `json:"profileIcon"`
+	PUUID                       string        `json:"puuid"`
+	RiotIDGameName              string        `json:"riotIdGameName"`
+	RiotIDTagline               string        `json:"riotIdTagline"`
+	Runes                       SummonerRunes `json:"runes"`
+	Summoner1ID                 int           `json:"summoner1Id"`
+	Summoner2ID                 int           `json:"summoner2Id"`
+	SummonerLevel               int           `json:"summonerLevel"`
+	Team                        int           `json:"team"`
+	TeamPosition                string        `json:"teamPosition"`
+	TotalDamageDealtToChampions int           `json:"totalDamageDealtToChampions"`
+	TotalMinionsKilled          int           `json:"totalMinionsKilled"`
+	VisionScore                 int           `json:"visionScore"`
+}
+
+type SummonerRunes struct {
+	StatPerks     StatPerks         `json:"statPerks"`
+	MainTree      MainRuneTree      `json:"mainTree"`
+	SecondaryTree SecondaryRuneTree `json:"secondaryTree"`
+}
+
+type StatPerks struct {
+	Defense int `json:"defense"`
+	Flex    int `json:"flex"`
+	Offense int `json:"offense"`
+}
+
+type MainRuneTree struct {
+	Keystone int `json:"keystone"`
+	Rune1    int `json:"rune1"`
+	Rune2    int `json:"rune2"`
+	Rune3    int `json:"rune3"`
+}
+
+type SecondaryRuneTree struct {
+	Rune1 int `json:"rune1"`
+	Rune2 int `json:"rune2"`
 }
 
 type LeagueRank struct {

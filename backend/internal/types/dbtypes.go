@@ -1,6 +1,8 @@
 package types
 
-import "time"
+import (
+	"time"
+)
 
 type PUUIDCacheCheck struct {
 	Found         bool
@@ -56,6 +58,7 @@ type MatchParticipantRow struct {
 	SummonerLevelAtMatch int
 	ProfileIconAtMatch   int
 	GameStart            time.Time
+	Runes                SummonerRunes
 }
 
 type SummonerRow struct {

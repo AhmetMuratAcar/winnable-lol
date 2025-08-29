@@ -48,26 +48,23 @@ func ConstructMatchDataMap(ctx context.Context, pool *pgxpool.Pool, matchIDs []s
 	if len(matchIDs) == 0 {
 		return out, nil
 	}
-	// Initialize all IDs with nil so caller can detect missing ones.
+
 	for _, id := range matchIDs {
 		out[id] = nil
 	}
 
-	// 1) Batch load matches
 	matches, err := utils.GetMatchesByIDs(ctx, pool, matchIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	// 2) Batch load participants grouped by match
 	participantsByMatch, err := utils.GetParticipantsForMatches(ctx, pool, matchIDs)
 	if err != nil {
 		return nil, err
 	}
 
-	// 3) Assemble LeagueMatch for each found match
 	for mID, m := range matches {
-		ps := participantsByMatch[mID] // may be empty slice (shouldn’t happen normally)
+		ps := participantsByMatch[mID]
 		lm := assembleLeagueMatch(m, ps)
 		// copy to new var to safely take address in loop
 		v := lm
@@ -114,6 +111,7 @@ func assembleLeagueMatch(m types.MatchRow, ps []types.MatchParticipantRow) types
 			TotalDamageDealtToChampions: p.TotalDamageToChamps,
 			TotalMinionsKilled:          p.TotalMinionsKilled,
 			VisionScore:                 p.VisionScore,
+			Runes:                       p.Runes,
 		})
 
 		lm.ParticipantPUUIDs = append(lm.ParticipantPUUIDs, p.PUUID)

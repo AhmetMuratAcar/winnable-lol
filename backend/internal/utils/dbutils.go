@@ -315,7 +315,16 @@ func GetParticipantsForMatches(ctx context.Context, pool *pgxpool.Pool, ids []st
 			riot_id_tag_line,
 			summoner_level_at_match,
 			profile_icon_at_match,
-			game_start
+			game_start,
+			rune_main_keystone,
+			rune_main_1,
+			rune_main_2,
+			rune_main_3,
+			rune_second_1,
+			rune_second_2,
+			rune_stat_offense,
+			rune_stat_flex,
+			rune_stat_defense
 		FROM match_participants
 		WHERE match_id = ANY($1)
 		ORDER BY match_id, participant_index
@@ -351,6 +360,15 @@ func GetParticipantsForMatches(ctx context.Context, pool *pgxpool.Pool, ids []st
 			summonerLevelMatch int
 			profileIconMatch   int
 			gameStart          time.Time
+			runeMainKeystone   int
+			runeMain1          int
+			runeMain2          int
+			runeMain3          int
+			runeSecond1        int
+			runeSecond2        int
+			runeOffense        int
+			runeFlex           int
+			runeDefense        int
 		)
 
 		if err := rows.Scan(
@@ -358,6 +376,8 @@ func GetParticipantsForMatches(ctx context.Context, pool *pgxpool.Pool, ids []st
 			&kills, &deaths, &assists, &goldEarned, &totalDmgToChamps, &totalMinions,
 			&visionScore, &items, &s1ID, &s2ID, &teamPosition, &riotGameName,
 			&riotTagLine, &summonerLevelMatch, &profileIconMatch, &gameStart,
+			&runeMainKeystone, &runeMain1, &runeMain2, &runeMain3,
+			&runeSecond1, &runeSecond2, &runeOffense, &runeFlex, &runeDefense,
 		); err != nil {
 			return nil, fmt.Errorf("scan participant row: %w", err)
 		}
@@ -385,6 +405,23 @@ func GetParticipantsForMatches(ctx context.Context, pool *pgxpool.Pool, ids []st
 			SummonerLevelAtMatch: summonerLevelMatch,
 			ProfileIconAtMatch:   profileIconMatch,
 			GameStart:            gameStart,
+			Runes: types.SummonerRunes{
+				StatPerks: types.StatPerks{
+					Offense: runeOffense,
+					Flex:    runeFlex,
+					Defense: runeDefense,
+				},
+				MainTree: types.MainRuneTree{
+					Keystone: runeMainKeystone,
+					Rune1:    runeMain1,
+					Rune2:    runeMain2,
+					Rune3:    runeMain3,
+				},
+				SecondaryTree: types.SecondaryRuneTree{
+					Rune1: runeSecond1,
+					Rune2: runeSecond2,
+				},
+			},
 		})
 	}
 	if err := rows.Err(); err != nil {
@@ -440,12 +477,21 @@ func AddMatchData(ctx context.Context, pool *pgxpool.Pool, matchData []types.Lea
 			riot_id_tag_line,
 			summoner_level_at_match,
 			profile_icon_at_match,
-			game_start
+			game_start,
+			rune_main_keystone,
+			rune_main_1,
+			rune_main_2,
+			rune_main_3,
+			rune_second_1,
+			rune_second_2,
+			rune_stat_offense,
+			rune_stat_flex,
+			rune_stat_defense
 		)
 		VALUES (
 			$1,$2,$3,$4::smallint,$5,$6,$7,$8,$9,$10,$11,$12,$13,
-			$14::int[],
-			$15,$16,$17,$18,$19,$20,$21,$22
+			$14::int[],$15,$16,$17,$18,$19,$20,$21,$22,$23, $24, 
+			$25, $26, $27, $28, $29, $30, $31
 		)
 	`
 
@@ -509,6 +555,15 @@ func AddMatchData(ctx context.Context, pool *pgxpool.Pool, matchData []types.Lea
 				p.SummonerLevel,
 				p.ProfileIconID,
 				gameStart,
+				p.Runes.MainTree.Keystone,
+				p.Runes.MainTree.Rune1,
+				p.Runes.MainTree.Rune2,
+				p.Runes.MainTree.Rune3,
+				p.Runes.SecondaryTree.Rune1,
+				p.Runes.SecondaryTree.Rune2,
+				p.Runes.StatPerks.Offense,
+				p.Runes.StatPerks.Flex,
+				p.Runes.StatPerks.Defense,
 			)
 		}
 	}
