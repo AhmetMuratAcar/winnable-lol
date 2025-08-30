@@ -29,7 +29,7 @@ export default async function SummonerPage({ params }) {
   }
 
   if (res.status === 404) {
-    redirect("/summoner-not-found");
+    redirect(`/summoner-not-found/${region}/${encodeURIComponent(slug)}`);
   }
 
   if (!res.ok) {
@@ -40,7 +40,7 @@ export default async function SummonerPage({ params }) {
   if (process.env.NODE_ENV === "development") {
     console.log("Fetched profile data:", profileData);
   }
-  
+
   return (
     <main className="min-h-svh flex flex-col">
       <Header />

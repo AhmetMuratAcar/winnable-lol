@@ -34,6 +34,24 @@ const SERVER_CODE_MAP = {
   "Vietnam":               "VN2"
 };
 
+const REGION_TAG_TO_NAME = {
+  "NA1":   "North America",
+  "EUW":   "Europe West",
+  "EUNE":  "Europe Nordic & East",
+  "ME1":   "Middle East",
+  "OC":    "Oceania",
+  "LAS":   "LAS",
+  "LAN":   "LAN",
+  "SG2":   "Southeast Asia",
+  "KR1":   "Korea",
+  "JP1":   "Japan",
+  "BR1":   "Brazil",
+  "RU1":   "Russia",
+  "TR1":   "Türkiye",
+  "TW2":   "Taiwan",
+  "VN2":   "Vietnam"
+}
+
 const TAGLINE_TO_SERVER = {
   "NA1":  "NA1",
   "EUW":  "EUW1",
@@ -51,6 +69,10 @@ const TAGLINE_TO_SERVER = {
   "TW2":  "TW2",
   "VN2":  "VN2"
 };
+
+export function regionTagToServerName(regionTag) {
+  return REGION_TAG_TO_NAME[regionTag]
+}
 
 export function regionTagToServerCode(regionTag) {
   return TAGLINE_TO_SERVER[regionTag]
