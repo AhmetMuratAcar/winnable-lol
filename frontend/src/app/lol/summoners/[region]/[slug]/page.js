@@ -1,6 +1,6 @@
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
-import ProfileSection from '@/app/components/ProfileSection';
+import { ProfileSection } from "@/app/components/LeagueProfile";
 
 export default async function SummonerPage ({ params }) {
     const { region, slug } = await params

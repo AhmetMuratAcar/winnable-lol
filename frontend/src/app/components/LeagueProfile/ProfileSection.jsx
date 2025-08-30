@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { regionTagToServerCode } from "../utils/idValidation";
+import { regionTagToServerCode } from "../../utils/idValidation";
 
 export default function ProfileSection({ region, slug }) {
     const router = useRouter()
