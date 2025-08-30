@@ -1,103 +1,50 @@
-"use client"
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { regionTagToServerCode } from "../../utils/idValidation";
+"use client";
+import React from "react";
 
-export default function ProfileSection({ region, slug }) {
-    const router = useRouter()
-    const [data, setData] = useState(null)
-    const [loading, setLoading] = useState(true)
-    // const [errorMessage, setErrorMessage] = useState('')
-    const regionServerCode = regionTagToServerCode(region)
+export default function ProfileSection({ data }) {
+  if (!data) {
+    return <p>No profile data available.</p>;
+  }
 
-    useEffect(() => {
-        if (typeof slug !== 'string' || !slug.includes('-')) {
-            setLoading(false)
-            router.push('/summoner-not-found')
-            return
-        }
+  const { gameName, tagLine, summonerLevel, ranks, masteryData } = data;
 
-        const [gameNameEncoded, tagLineEncoded] = slug.split('-') || []
-        const gameName = decodeURIComponent(gameNameEncoded)
-        const tagLine = decodeURIComponent(tagLineEncoded)
-        
-        if (!gameName || !tagLine) {
-            setLoading(false)
-            router.push('/summoner-not-found')
-            return
-        }
+  const rank = ranks && ranks.length > 0 ? ranks[0] : null;
+  const topChampions = masteryData?.championMasteries?.slice(0, 3) || [];
 
-        async function fetchData() {
-            try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/lol/profile`, {
-                    method: `POST`,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        region: regionServerCode,
-                        gameName: gameName,
-                        tagLine: tagLine,
-                    }),
-			    })
+  return (
+    <section className="flex flex-col items-center gap-6 py-6">
+      {/* Basic info */}
+      <div className="text-center">
+        <h2 className="text-2xl font-bold">{gameName}#{tagLine}</h2>
+        <p className="text-gray-400">Level {summonerLevel}</p>
+      </div>
 
-                if (!res.ok) {
-                    if (res.status === 404) {
-                        router.push('/summoner-not-found')
-                    } else {
-                        router.push(`/server-error?status=${res.status}`)
-                    }
-                    setLoading(false)
-                    return
-			    }
+      {/* Rank info */}
+      {rank && (
+        <div className="bg-[var(--contrast)] text-white px-6 py-4 rounded-xl shadow">
+          <p className="font-semibold">Ranked {rank.queueType.replaceAll("_", " ")}</p>
+          <p>
+            {rank.tier} {rank.rank} – {rank.leaguePoints} LP
+          </p>
+          <p>
+            {rank.wins}W / {rank.losses}L
+          </p>
+        </div>
+      )}
 
-                const json = await res.json()
-                setData(json)
-            } catch (err) {
-                console.log(`ERROR: ${err}`)
-                const isConnectionRefused = err instanceof TypeError && err.message.includes('Failed to fetch')
-                
-                if (isConnectionRefused) {
-                    console.log('our servers are down')
-                    // route to our servers are down page
-                } else {
-                    console.log('unexpected error')
-                    // route to unexpected error page
-                }
-            } finally {
-                setLoading(false)
-            }
-        }
-        fetchData()
-    }, [region, slug])
-
-    if (loading) {
-        // render a loading icon on page
-        return <p>Loading…</p>
-    }
-
-    return (
-        <section 
-            id="ProfileSection"
-            className="flex flex-col flex-grow items-center justify-start px-4 py-6"
-        >
-            <div>
-                <p>profile section rendered</p>
-                <div className="w-full max-w-lg space-y-4">
-                {data && data.length > 0 ? (
-                    data.map(({ championId, championLevel, championPoints }) => (
-                    <div
-                        key={championId}
-                        className="p-4 border rounded-md bg-[var(--contrast)] text-white"
-                    >
-                        <p>Champion ID: {championId}</p>
-                        <p>Level: {championLevel}</p>
-                        <p>Points: {championPoints}</p>
-                    </div>
-                    ))
-                ) : (
-                    <p>No mastery data to show.</p>
-                )}
-                </div>
-            </div>
-        </section>
-    );
+      {/* Top mastery champs */}
+      <div className="w-full max-w-md space-y-3">
+        <h3 className="text-xl font-semibold">Top Champions</h3>
+        {topChampions.map((c) => (
+          <div
+            key={c.championId}
+            className="flex justify-between bg-[var(--contrast)] text-white px-4 py-2 rounded-lg"
+          >
+            <span>Champion ID: {c.championId}</span>
+            <span>Lvl {c.championLevel} • {c.championPoints.toLocaleString()} pts</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
