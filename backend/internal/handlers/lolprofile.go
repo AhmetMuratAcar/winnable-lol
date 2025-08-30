@@ -53,11 +53,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// PUUID calls
 	client := riot.NewClient()
-	userProfile := types.LeagueProfilePage{
-		GameName: req.GameName,
-		TagLine:  req.TagLine,
-		Region:   req.Region,
-	}
+	userProfile := types.LeagueProfilePage{Region: req.Region}
 
 	cacheCheck, err := utils.SummonerCacheCheck(ctx, h.pool, req)
 	if err != nil {
@@ -75,6 +71,8 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		userProfile.PUUID = cacheCheck.PUUID
 		userProfile.ProfileIconID = cacheCheck.ProfileIconID
 		userProfile.Level = cacheCheck.Level
+		userProfile.GameName = cacheCheck.GameName
+		userProfile.TagLine = cacheCheck.TagLine
 
 		if !cacheCheck.Stale && cacheCheck.IsPopulated {
 			// guaranteed to have good data to return
@@ -95,7 +93,11 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	} else {
-		userProfile.PUUID, err = client.GetSummonerPUUID(req)
+		riotAccount, err := client.GetSummonerPUUID(req)
+		userProfile.PUUID = riotAccount.Puuid
+		userProfile.GameName = riotAccount.GameName
+		userProfile.TagLine = riotAccount.TagLine
+
 		if err != nil {
 			var httpErr *types.HTTPError
 			if errors.As(err, &httpErr) {

@@ -64,14 +64,18 @@ func SyncSummonerProfileData(
 
 // GetPUUID queries summoners table for given user's PUUID
 func SummonerCacheCheck(ctx context.Context, pool *pgxpool.Pool, userInfo types.RequestBody) (types.PUUIDCacheCheck, error) {
-	var puuid string
-	var updatedAt time.Time
-	var isPopulated bool
-	var iconID int
-	var level int
+	var (
+		puuid       string
+		updatedAt   time.Time
+		isPopulated bool
+		iconID      int
+		level       int
+		gameName    string
+		tagLine     string
+	)
 
 	const query = `
-        SELECT puuid, updated_at, is_populated, profile_icon_id, summoner_level
+        SELECT puuid, updated_at, is_populated, profile_icon_id, summoner_level, game_name, tag_line
         FROM summoners
         WHERE region = $1
           AND lower(game_name) = lower($2)
@@ -89,6 +93,8 @@ func SummonerCacheCheck(ctx context.Context, pool *pgxpool.Pool, userInfo types.
 		&isPopulated,
 		&iconID,
 		&level,
+		&gameName,
+		&tagLine,
 	)
 
 	if err != nil {
@@ -109,6 +115,8 @@ func SummonerCacheCheck(ctx context.Context, pool *pgxpool.Pool, userInfo types.
 		LastUpdated:   updatedAt,
 		ProfileIconID: iconID,
 		Level:         level,
+		GameName:      gameName,
+		TagLine:       tagLine,
 	}, nil
 }
 

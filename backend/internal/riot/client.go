@@ -36,7 +36,7 @@ func NewClientWithHTTPClient(httpClient *http.Client) *RiotClient {
 	}
 }
 
-func (c *RiotClient) GetSummonerPUUID(reqBody types.RequestBody) (puuid string, err error) {
+func (c *RiotClient) GetSummonerPUUID(reqBody types.RequestBody) (types.AccountResponse, error) {
 	// TODO: actually route to nearest server instead of defaulting all to americas
 	baseEndpoint := "https://americas." + c.baseURL + "/riot/account/v1/accounts/by-riot-id"
 	endpoint := fmt.Sprintf(
@@ -48,13 +48,13 @@ func (c *RiotClient) GetSummonerPUUID(reqBody types.RequestBody) (puuid string, 
 
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
-		return "", fmt.Errorf("error creating GetSummonerPUUID request: %w", err)
+		return types.AccountResponse{}, fmt.Errorf("error creating GetSummonerPUUID request: %w", err)
 	}
 	req.Header.Set("X-Riot-Token", c.apiKey)
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("GetSummonerPUUID API request failed: %w", err)
+		return types.AccountResponse{}, fmt.Errorf("GetSummonerPUUID API request failed: %w", err)
 	}
 	defer res.Body.Close()
 
@@ -67,15 +67,15 @@ func (c *RiotClient) GetSummonerPUUID(reqBody types.RequestBody) (puuid string, 
 		}
 
 		log.Printf("RIOT API ERROR: %v", err)
-		return "", err
+		return types.AccountResponse{}, err
 	}
 
 	var result types.AccountResponse
 	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
-		return "", fmt.Errorf("error decoding JSON: %w", err)
+		return types.AccountResponse{}, fmt.Errorf("error decoding JSON: %w", err)
 	}
 
-	return result.Puuid, nil
+	return result, nil
 }
 
 func (c *RiotClient) GetSummonerMastery(region, puuid string) ([]types.ChampionMastery, error) {

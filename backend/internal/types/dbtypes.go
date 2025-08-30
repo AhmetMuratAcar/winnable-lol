@@ -12,6 +12,8 @@ type PUUIDCacheCheck struct {
 	LastUpdated   time.Time
 	ProfileIconID int
 	Level         int
+	GameName      string
+	TagLine       string
 }
 
 type CachedProfileCheckList struct {
