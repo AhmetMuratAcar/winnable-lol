@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { idValidation } from "../utils/idValidation";
 
-const MainSection = () => {
+export default function MainSection() {
 	const router = useRouter()
 	const [isSubmitting, setIsSubmitting] = useState(false)
 	const [errorMessage, setErrorMessage] = useState('')
@@ -134,5 +134,3 @@ const MainSection = () => {
 		</section>
   );
 };
-
-export default MainSection;

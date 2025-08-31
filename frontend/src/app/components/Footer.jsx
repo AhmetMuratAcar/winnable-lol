@@ -1,4 +1,4 @@
-const Footer = () => {
+export default function Footer() {
 	return (
 		<section id="FooterSection">
 			<footer className="bg-(--contrast) h-12 items-center justify-center text-center flex">
@@ -17,5 +17,3 @@ const Footer = () => {
 		</section>
 	);
 };
-
-export default Footer;

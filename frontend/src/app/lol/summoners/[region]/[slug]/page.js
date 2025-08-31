@@ -38,7 +38,29 @@ export default async function SummonerPage({ params }) {
 
   const profileData = await res.json();
   if (process.env.NODE_ENV === "development") {
-    console.log("Fetched profile data:", profileData);
+    const {
+        profileIconId,
+        gameName,
+        tagLine,
+        summonerLevel,
+        ranks = [],
+        masteryData = {},
+        matchData = [],
+    } = profileData;
+
+    console.log("Fetched profile data:");
+    console.log("  profileIconId:", profileIconId);
+    console.log("  gameName:", gameName);
+    console.log("  tagLine:", tagLine);
+    console.log("  summonerLevel:", summonerLevel);
+
+    console.log("  ranks:");
+    ranks.forEach((rank, i) => {
+        console.log(`    [${i}]`, rank);
+    });
+
+    console.log("  masteryData length:", masteryData?.championMasteries?.length ?? 0);
+    console.log("  matchData length:", matchData?.length ?? 0);
   }
 
   return (

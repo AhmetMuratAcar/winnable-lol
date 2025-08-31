@@ -1,7 +1,7 @@
 "use client"
 import { useRouter } from "next/navigation";
 
-const GoHomeButton = () => {
+export default function GoHomeButton() {
     const router = useRouter();
 
     return (
@@ -13,5 +13,3 @@ const GoHomeButton = () => {
         </button>
     );
 }
-
-export default GoHomeButton;

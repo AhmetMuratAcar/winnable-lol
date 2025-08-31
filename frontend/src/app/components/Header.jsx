@@ -4,7 +4,7 @@ import { FaQuestionCircle } from 'react-icons/fa';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-const Header = () => {
+export default function Header () {
   const router = useRouter()
   const [showInfo, setShowInfo] = useState(false);
   const infoRef = useRef(null);
@@ -59,5 +59,3 @@ const Header = () => {
     </header>
   );
 };
-
-export default Header;
