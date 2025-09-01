@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  /* --background: #262b33; */ 
+  /* --background: #262b33; */
   /* --background: #28344E; */
   --background: #1c1c1f; /* dark gray */
-  --foreground: #FFFFFF; /* white text */
-  --contrast: #2A2A2E; /* cool gray */
+  --foreground: #ffffff; /* white text */
+  --contrast: #2a2a2e; /* cool gray */
   --pastel-red: #c31b3c; /* dark pastel red */
   --chart: #ff2056; /* rose-500 red */
 }
@@ -42,7 +42,8 @@ select:-webkit-autofill {
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;

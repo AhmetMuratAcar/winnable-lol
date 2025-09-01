@@ -1,11 +1,11 @@
 "use client";
-import React, { useState, useRef, useEffect } from 'react';
-import { FaQuestionCircle } from 'react-icons/fa';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import React, { useState, useRef, useEffect } from "react";
+import { FaQuestionCircle } from "react-icons/fa";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
-export default function Header () {
-  const router = useRouter()
+export default function Header() {
+  const router = useRouter();
   const [showInfo, setShowInfo] = useState(false);
   const infoRef = useRef(null);
 
@@ -13,22 +13,26 @@ export default function Header () {
   useEffect(() => {
     function handleClickOutside(event) {
       // If the popup is open and the click is not inside infoRef, close it
-      if (showInfo && infoRef.current && !infoRef.current.contains(event.target)) {
+      if (
+        showInfo &&
+        infoRef.current &&
+        !infoRef.current.contains(event.target)
+      ) {
         setShowInfo(false);
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showInfo]);
 
   return (
     <header className="w-screen flex items-center justify-between px-4 bg-(--contrast) h-14">
-      <div className='flex items-center h-full'>
-        <button 
-          onClick={() => router.push('/')}
+      <div className="flex items-center h-full">
+        <button
+          onClick={() => router.push("/")}
           className="p-0 border-none bg-transparent cursor-pointer"
         >
           <Image
@@ -36,7 +40,7 @@ export default function Header () {
             width={45}
             height={45}
             alt="logo"
-            className='block'
+            className="block"
           />
         </button>
       </div>
@@ -48,14 +52,17 @@ export default function Header () {
         {showInfo && (
           <div className="z-50 absolute right-0 mt-2 w-64 p-4 bg-white text-gray-800 border border-gray-300 rounded shadow-lg">
             <p className="text-sm">
-              Welcome to Winnable. Enter your Riot ID to generate a radar graph of your champion mastery               
+              Welcome to Winnable. Enter your Riot ID to generate a radar graph
+              of your champion mastery
               <br />
               <br />
-              Winnable was created under Riot Games' "Legal Jibber Jabber" policy using assets owned by Riot Games. Riot Games does not endorse or sponsor this project.
+              Winnable was created under Riot Games' "Legal Jibber Jabber"
+              policy using assets owned by Riot Games. Riot Games does not
+              endorse or sponsor this project.
             </p>
           </div>
         )}
       </div>
     </header>
   );
-};
+}

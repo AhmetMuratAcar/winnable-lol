@@ -13,7 +13,8 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "Winnable",
-  description: "A website for checking your win probability in League of Legends.",
+  description:
+    "A website for checking your win probability in League of Legends.",
 };
 
 export default function RootLayout({ children }) {
