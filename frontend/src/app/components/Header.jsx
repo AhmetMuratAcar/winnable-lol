@@ -4,7 +4,7 @@ import { FaQuestionCircle } from "react-icons/fa";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-export default function Header() {
+export default function Header({ bgClass = "bg-(--contrast)" }) {
   const router = useRouter();
   const [showInfo, setShowInfo] = useState(false);
   const infoRef = useRef(null);
@@ -29,40 +29,44 @@ export default function Header() {
   }, [showInfo]);
 
   return (
-    <header className="w-screen flex items-center justify-between px-4 bg-(--contrast) h-14">
-      <div className="flex items-center h-full">
-        <button
-          onClick={() => router.push("/")}
-          className="p-0 border-none bg-transparent cursor-pointer"
-        >
-          <Image
-            src="/images/logo.png"
-            width={45}
-            height={45}
-            alt="logo"
-            className="block"
+    <section id="HeaderSection">
+      <header
+        className={`${bgClass} w-screen flex items-center justify-between px-4 h-14`}
+      >
+        <div className="flex items-center h-full">
+          <button
+            onClick={() => router.push("/")}
+            className="p-0 border-none bg-transparent cursor-pointer"
+          >
+            <Image
+              src="/images/logo.png"
+              width={45}
+              height={45}
+              alt="logo"
+              className="block"
+            />
+          </button>
+        </div>
+        <div className="relative" ref={infoRef}>
+          <FaQuestionCircle
+            className="text-2xl cursor-pointer"
+            onClick={() => setShowInfo(!showInfo)}
           />
-        </button>
-      </div>
-      <div className="relative" ref={infoRef}>
-        <FaQuestionCircle
-          className="text-2xl cursor-pointer"
-          onClick={() => setShowInfo(!showInfo)}
-        />
-        {showInfo && (
-          <div className="z-50 absolute right-0 mt-2 w-64 p-4 bg-white text-gray-800 border border-gray-300 rounded shadow-lg">
-            <p className="text-sm">
-              Welcome to Winnable. Enter your Riot ID to generate a radar graph
-              of your champion mastery
-              <br />
-              <br />
-              Winnable was created under Riot Games' "Legal Jibber Jabber"
-              policy using assets owned by Riot Games. Riot Games does not
-              endorse or sponsor this project.
-            </p>
-          </div>
-        )}
-      </div>
-    </header>
+          {showInfo && (
+            <div className="z-50 absolute right-0 mt-2 w-64 p-4 bg-white text-gray-800 border border-gray-300 rounded shadow-lg">
+              <p className="text-sm">
+                Welcome to Winnable. Enter your Riot ID to generate a radar
+                graph of your champion mastery
+                <br />
+                <br />
+                Winnable was created under Riot Games' "Legal Jibber Jabber"
+                policy using assets owned by Riot Games. Riot Games does not
+                endorse or sponsor this project.
+              </p>
+            </div>
+          )}
+        </div>
+      </header>
+    </section>
   );
 }
