@@ -1,7 +1,7 @@
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import { ProfileSection } from "@/app/components/LeagueProfile";
-import { regionTagToServerCode } from "@/app/utils/idValidation";
+import { regionTagToServerCode } from "@/lib/utils/stringUtils";
 import { redirect } from "next/navigation";
 
 export default async function SummonerPage({ params }) {
@@ -59,15 +59,12 @@ export default async function SummonerPage({ params }) {
       console.log(`    [${i}]`, rank);
     });
 
-    console.log(
-      "  masteryData length:",
-      masteryData?.championMasteries?.length ?? 0,
-    );
+    console.log("  masteryData length:", masteryData?.championMasteries?.length ?? 0);
     console.log("  matchData length:", matchData?.length ?? 0);
   }
 
   return (
-    <main className="min-h-svh flex flex-col">
+    <main className="min-h-svh flex flex-col bg-(--background)">
       <Header />
       <ProfileSection data={profileData} />
       <Footer />

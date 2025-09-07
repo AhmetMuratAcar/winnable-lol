@@ -25,8 +25,7 @@ export default async function SummonerNotFoundPage({ params }) {
         <h1 className="text-3xl font-bold mb-4">Summoner Not Found</h1>
         <p className="text-lg text-gray-500 mb-6">
           <span className="font-semibold">{displayName}</span> does not exist in{" "}
-          <span className="font-semibold">{regionTagToServerName(region)}</span>
-          .
+          <span className="font-semibold">{regionTagToServerName(region)}</span>.
         </p>
         <GoHomeButton />
       </section>

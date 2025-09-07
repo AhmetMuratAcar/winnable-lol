@@ -10,8 +10,7 @@ export default async function SlowPage() {
       <div className="flex flex-col flex-grow items-center justify-center px-4 py-6 text-center">
         <h1 className="text-3xl font-bold">Slow Page Loaded</h1>
         <p className="text-gray-500 mt-4">
-          This page delayed on purpose so you could see the global loading
-          spinner.
+          This page delayed on purpose so you could see the global loading spinner.
         </p>
       </div>
       <Footer />

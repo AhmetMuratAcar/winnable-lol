@@ -13,11 +13,7 @@ export default function Header({ bgClass = "bg-(--contrast)" }) {
   useEffect(() => {
     function handleClickOutside(event) {
       // If the popup is open and the click is not inside infoRef, close it
-      if (
-        showInfo &&
-        infoRef.current &&
-        !infoRef.current.contains(event.target)
-      ) {
+      if (showInfo && infoRef.current && !infoRef.current.contains(event.target)) {
         setShowInfo(false);
       }
     }
@@ -30,21 +26,13 @@ export default function Header({ bgClass = "bg-(--contrast)" }) {
 
   return (
     <section id="HeaderSection">
-      <header
-        className={`${bgClass} w-screen flex items-center justify-between px-4 h-14`}
-      >
+      <header className={`${bgClass} w-screen flex items-center justify-between px-4 h-14`}>
         <div className="flex items-center h-full">
           <button
             onClick={() => router.push("/")}
             className="p-0 border-none bg-transparent cursor-pointer"
           >
-            <Image
-              src="/images/logo.png"
-              width={45}
-              height={45}
-              alt="logo"
-              className="block"
-            />
+            <Image src="/images/logo.png" width={45} height={45} alt="logo" className="block" />
           </button>
         </div>
         <div className="relative" ref={infoRef}>
@@ -55,13 +43,12 @@ export default function Header({ bgClass = "bg-(--contrast)" }) {
           {showInfo && (
             <div className="z-50 absolute right-0 mt-2 w-64 p-4 bg-white text-gray-800 border border-gray-300 rounded shadow-lg">
               <p className="text-sm">
-                Welcome to Winnable. Enter your Riot ID to generate a radar
-                graph of your champion mastery
+                Welcome to Winnable. Enter your Riot ID to generate a radar graph of your champion
+                mastery
                 <br />
                 <br />
-                Winnable was created under Riot Games' "Legal Jibber Jabber"
-                policy using assets owned by Riot Games. Riot Games does not
-                endorse or sponsor this project.
+                Winnable was created under Riot Games' "Legal Jibber Jabber" policy using assets
+                owned by Riot Games. Riot Games does not endorse or sponsor this project.
               </p>
             </div>
           )}

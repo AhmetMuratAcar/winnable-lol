@@ -1,9 +1,7 @@
 export default function Footer({ bgClass = "bg-(--contrast)" }) {
   return (
     <section id="FooterSection">
-      <footer
-        className={`${bgClass} h-12 items-center justify-center text-center flex`}
-      >
+      <footer className={`${bgClass} h-12 items-center justify-center text-center flex`}>
         <div>
           <p>
             Check it out on{" "}

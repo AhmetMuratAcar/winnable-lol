@@ -15,9 +15,7 @@ export default function MainSection() {
     setErrorMessage("");
 
     if (!navigator.onLine) {
-      setErrorMessage(
-        "You appear to be offline, Please check your internet connection",
-      );
+      setErrorMessage("You appear to be offline, Please check your internet connection");
       setIsSubmitting(false);
       return;
     }
@@ -61,17 +59,11 @@ export default function MainSection() {
         />
       </div>
 
-      <form
-        onSubmit={onSubmit}
-        className="flex flex-col items-center w-full max-w-xl"
-      >
+      <form onSubmit={onSubmit} className="flex flex-col items-center w-full max-w-xl">
         <div className="flex items-center bg-[#31313c] rounded-full px-4 py-2 w-full">
           {/* Region Dropdown */}
           <div className="w-24 sm:w-auto ml-4 flex flex-col shrink-0">
-            <label
-              htmlFor="region"
-              className="text-xs text-white font-semibold mb-1 ml-1"
-            >
+            <label htmlFor="region" className="text-xs text-white font-semibold mb-1 ml-1">
               Region
             </label>
             <select
@@ -103,10 +95,7 @@ export default function MainSection() {
 
           {/* Search Input */}
           <div className="flex flex-col flex-grow min-w-0">
-            <label
-              htmlFor="ign"
-              className="text-xs text-white font-semibold mb-1"
-            >
+            <label htmlFor="ign" className="text-xs text-white font-semibold mb-1">
               Search
             </label>
             <input
@@ -128,11 +117,7 @@ export default function MainSection() {
           {isSubmitting ? "Submitting…" : "Winnable?"}
         </button>
 
-        {errorMessage && (
-          <p className="text-[var(--pastel-red)] text-sm mt-2">
-            {errorMessage}
-          </p>
-        )}
+        {errorMessage && <p className="text-[var(--pastel-red)] text-sm mt-2">{errorMessage}</p>}
       </form>
     </section>
   );
