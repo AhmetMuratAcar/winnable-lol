@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { idValidation } from "../../lib/utils/stringUtils";
+import { idValidation } from "@/lib/utils/stringUtils";
 
 export default function MainSection() {
   const router = useRouter();
