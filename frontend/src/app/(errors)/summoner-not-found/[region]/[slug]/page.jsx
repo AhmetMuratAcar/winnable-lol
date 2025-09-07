@@ -1,7 +1,7 @@
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import GoHomeButton from "@/app/components/GoHomeButton";
-import { regionTagToServerName } from "@/app/utils/idValidation";
+import { regionTagToServerName } from "@/lib/utils/stringUtils";
 
 export default async function SummonerNotFoundPage({ params }) {
   const { region, slug } = await params;
