@@ -73,6 +73,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		userProfile.Level = cacheCheck.Level
 		userProfile.GameName = cacheCheck.GameName
 		userProfile.TagLine = cacheCheck.TagLine
+		userProfile.LastUpdated = cacheCheck.LastUpdated
 
 		if !cacheCheck.Stale && cacheCheck.IsPopulated {
 			// guaranteed to have good data to return
@@ -97,6 +98,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		userProfile.PUUID = riotAccount.Puuid
 		userProfile.GameName = riotAccount.GameName
 		userProfile.TagLine = riotAccount.TagLine
+		userProfile.LastUpdated = time.Now()
 
 		if err != nil {
 			var httpErr *types.HTTPError

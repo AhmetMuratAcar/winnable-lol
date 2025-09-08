@@ -1,5 +1,7 @@
 package types
 
+import "time"
+
 type AccountResponse struct {
 	Puuid    string `json:"puuid"`
 	GameName string `json:"gameName"`
@@ -96,6 +98,7 @@ type LeagueProfilePage struct {
 	TagLine       string        `json:"tagLine"`
 	Region        string        `json:"region"`
 	Level         int           `json:"summonerLevel"`
+	LastUpdated   time.Time     `json:"lastUpdated"`
 	Ranks         []LeagueRank  `json:"ranks"`
 	MasteryData   MasteryData   `json:"masteryData"`
 	MatchData     []LeagueMatch `json:"matchData"`
