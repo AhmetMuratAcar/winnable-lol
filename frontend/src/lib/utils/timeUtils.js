@@ -14,7 +14,7 @@ export function calcLastUpdated(lastUpdated) {
   }
 
   if (timeDiffSec < 86400) {
-    const hours = Math.floor(timeDiffSec / 24);
+    const hours = Math.floor(timeDiffSec / 3600);
     return plural(hours, "hour");
   }
 
