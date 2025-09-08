@@ -16,7 +16,7 @@ export default function ProfileHeader({ headerData }) {
   return (
     <section
       id="profileHeader"
-      className="bg-(--contrast) mt-10 p-10 border-1 border-gray-400 rounded w-1/2"
+      className="bg-(--contrast) mt-10 p-10 border-1 border-(--contrast-border) rounded w-1/2"
     >
       <div className="flex gap-6 items-start">
         <div id="iconAndLevel" className="relative inline-block self-start">
