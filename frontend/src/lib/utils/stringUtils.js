@@ -135,3 +135,14 @@ export function idValidation({ region, riotID }) {
   console.log(result);
   return result;
 }
+
+export function rankNumeralToNum(numeral) {
+  const numerals = {
+    "I": 1,
+    "II": 2,
+    "III": 3,
+    "IV": 4
+  }
+
+  return numerals[numeral]
+}

@@ -2,7 +2,7 @@ export function calcLastUpdated(lastUpdated) {
   const now = new Date();
   const updated = new Date(lastUpdated);
   const timeDiffSec = (now.getTime() - updated.getTime()) / 1000;
-  console.log(`NOW: ${now} UPDATED: ${updated} DIFF: ${timeDiffSec}`);
+  // console.log(`NOW: ${now} UPDATED: ${updated} DIFF: ${timeDiffSec}`);
 
   if (timeDiffSec < 60) {
     return "just now";
