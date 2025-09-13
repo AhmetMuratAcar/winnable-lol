@@ -243,13 +243,13 @@ func GetMatchesByIDs(ctx context.Context, pool *pgxpool.Pool, ids []string) (map
 			match_id,
 			end_of_game_result,
 			game_duration_sec,
-			game_ended_in_early_surrender,
 			game_start,
 			game_version,
 			queue_id,
 			winning_team,
 			bans_blue,
-			bans_red
+			bans_red,
+			game_ended_in_early_surrender
 		FROM matches
 		WHERE match_id = ANY($1)
 	`
