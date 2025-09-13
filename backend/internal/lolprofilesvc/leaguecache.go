@@ -77,16 +77,17 @@ func ConstructMatchDataMap(ctx context.Context, pool *pgxpool.Pool, matchIDs []s
 // assembleLeagueMatch converts DB rows -> API struct
 func assembleLeagueMatch(m types.MatchRow, ps []types.MatchParticipantRow) types.LeagueMatch {
 	lm := types.LeagueMatch{
-		EndOfGameResult:    m.EndOfGameResult,
-		GameDuration:       m.GameDurationSec,
-		GameStartTimestamp: int(m.GameStart.UnixMilli()),
-		GameVersion:        m.GameVersion,
-		MatchID:            m.MatchID,
-		ParticipantPUUIDs:  make([]string, 0, len(ps)),
-		Participants:       make([]types.LeagueMatchParticipant, 0, len(ps)),
-		QueueId:            m.QueueID,
-		Bans:               [][]int{m.BansBlue, m.BansRed},
-		WinningTeam:        m.WinningTeam,
+		EndOfGameResult:           m.EndOfGameResult,
+		GameDuration:              m.GameDurationSec,
+		GameEndedInEarlySurrender: m.GameEndedInEarlySurrender,
+		GameStartTimestamp:        int(m.GameStart.UnixMilli()),
+		GameVersion:               m.GameVersion,
+		MatchID:                   m.MatchID,
+		ParticipantPUUIDs:         make([]string, 0, len(ps)),
+		Participants:              make([]types.LeagueMatchParticipant, 0, len(ps)),
+		QueueId:                   m.QueueID,
+		Bans:                      [][]int{m.BansBlue, m.BansRed},
+		WinningTeam:               m.WinningTeam,
 	}
 
 	for _, p := range ps {

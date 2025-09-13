@@ -26,15 +26,16 @@ type CachedProfileCheckList struct {
 }
 
 type MatchRow struct {
-	MatchID         string
-	EndOfGameResult string
-	GameDurationSec int
-	GameStart       time.Time
-	GameVersion     string
-	QueueID         int
-	WinningTeam     int
-	BansBlue        []int
-	BansRed         []int
+	MatchID                   string
+	EndOfGameResult           string
+	GameDurationSec           int
+	GameEndedInEarlySurrender bool
+	GameStart                 time.Time
+	GameVersion               string
+	QueueID                   int
+	WinningTeam               int
+	BansBlue                  []int
+	BansRed                   []int
 }
 
 type MatchParticipantRow struct {

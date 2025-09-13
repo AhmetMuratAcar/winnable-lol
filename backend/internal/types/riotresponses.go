@@ -22,16 +22,17 @@ type MasteryData struct {
 }
 
 type LeagueMatch struct {
-	EndOfGameResult    string                   `json:"endOfGameResult"`
-	GameDuration       int                      `json:"gameDuration"`
-	GameStartTimestamp int                      `json:"gameStartTimeStamp"`
-	GameVersion        string                   `json:"gameVersion"`
-	MatchID            string                   `json:"matchId"`
-	ParticipantPUUIDs  []string                 `json:"participantPUUIDs"`
-	Participants       []LeagueMatchParticipant `json:"participants"`
-	QueueId            int                      `json:"queueId"`
-	Bans               [][]int                  `json:"bans"`
-	WinningTeam        int                      `json:"winningTeam"`
+	EndOfGameResult           string                   `json:"endOfGameResult"`
+	GameDuration              int                      `json:"gameDuration"`
+	GameEndedInEarlySurrender bool                     `json:"gameEndedInEarlySurrender"`
+	GameStartTimestamp        int                      `json:"gameStartTimeStamp"`
+	GameVersion               string                   `json:"gameVersion"`
+	MatchID                   string                   `json:"matchId"`
+	ParticipantPUUIDs         []string                 `json:"participantPUUIDs"`
+	Participants              []LeagueMatchParticipant `json:"participants"`
+	QueueId                   int                      `json:"queueId"`
+	Bans                      [][]int                  `json:"bans"`
+	WinningTeam               int                      `json:"winningTeam"`
 }
 
 type LeagueMatchParticipant struct {
@@ -91,17 +92,25 @@ type LeagueRank struct {
 	Losses       int    `json:"losses"`
 }
 
+type PlayedSummoner struct {
+	GameName    string `json:"gameName"`
+	GamesPlayed int    `json:"gamesPlayed"`
+	Wins        int    `json:"wins"`
+	Losses      int    `json:"losses"`
+}
+
 type LeagueProfilePage struct {
-	PUUID         string        `json:"PUUID"`
-	ProfileIconID int           `json:"profileIconId"`
-	GameName      string        `json:"gameName"`
-	TagLine       string        `json:"tagLine"`
-	Region        string        `json:"region"`
-	Level         int           `json:"summonerLevel"`
-	LastUpdated   time.Time     `json:"lastUpdated"`
-	Ranks         []LeagueRank  `json:"ranks"`
-	MasteryData   MasteryData   `json:"masteryData"`
-	MatchData     []LeagueMatch `json:"matchData"`
+	PUUID              string               `json:"PUUID"`
+	ProfileIconID      int                  `json:"profileIconId"`
+	GameName           string               `json:"gameName"`
+	TagLine            string               `json:"tagLine"`
+	Region             string               `json:"region"`
+	Level              int                  `json:"summonerLevel"`
+	LastUpdated        time.Time            `json:"lastUpdated"`
+	Ranks              []LeagueRank         `json:"ranks"`
+	MasteryData        MasteryData          `json:"masteryData"`
+	MatchData          []LeagueMatch        `json:"matchData"`
+	RecentlyPlayedWith []PlayedSummoner `json:"recentlyPlayedWith"`
 }
 
 // Removed the challenges and PlayerScore data from the RawMatchResponse struct because the

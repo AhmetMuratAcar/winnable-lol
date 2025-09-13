@@ -4,13 +4,14 @@ import "winnable/internal/types"
 
 func ToLeagueMatch(raw types.RawMatchResponse) types.LeagueMatch {
 	res := types.LeagueMatch{
-		EndOfGameResult:    raw.Info.EndOfGameResult,
-		GameDuration:       raw.Info.GameDuration,
-		GameStartTimestamp: raw.Info.GameStartTimestamp,
-		GameVersion:        raw.Info.GameVersion,
-		MatchID:            raw.Metadata.MatchID,
-		ParticipantPUUIDs:  raw.Metadata.Participants,
-		QueueId:            raw.Info.QueueID,
+		EndOfGameResult:           raw.Info.EndOfGameResult,
+		GameDuration:              raw.Info.GameDuration,
+		GameEndedInEarlySurrender: raw.Info.Participants[0].GameEndedInEarlySurrender,
+		GameStartTimestamp:        raw.Info.GameStartTimestamp,
+		GameVersion:               raw.Info.GameVersion,
+		MatchID:                   raw.Metadata.MatchID,
+		ParticipantPUUIDs:         raw.Metadata.Participants,
+		QueueId:                   raw.Info.QueueID,
 	}
 
 	participantCount := len(res.ParticipantPUUIDs) + 1

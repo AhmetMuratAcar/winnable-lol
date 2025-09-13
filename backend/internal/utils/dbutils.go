@@ -243,6 +243,7 @@ func GetMatchesByIDs(ctx context.Context, pool *pgxpool.Pool, ids []string) (map
 			match_id,
 			end_of_game_result,
 			game_duration_sec,
+			game_ended_in_early_surrender,
 			game_start,
 			game_version,
 			queue_id,
@@ -261,33 +262,35 @@ func GetMatchesByIDs(ctx context.Context, pool *pgxpool.Pool, ids []string) (map
 
 	for rows.Next() {
 		var (
-			mID            string
-			endRes         string
-			gameDur        int
-			gameStart      time.Time
-			version        string
-			queueID        int
-			winningTeamI16 int16
-			bansBlue       []int
-			bansRed        []int
+			mID                       string
+			endRes                    string
+			gameDur                   int
+			gameStart                 time.Time
+			version                   string
+			queueID                   int
+			winningTeamI16            int16
+			bansBlue                  []int
+			bansRed                   []int
+			gameEndedInEarlySurrender bool
 		)
 		if err := rows.Scan(
 			&mID, &endRes, &gameDur, &gameStart, &version, &queueID,
-			&winningTeamI16, &bansBlue, &bansRed,
+			&winningTeamI16, &bansBlue, &bansRed, &gameEndedInEarlySurrender,
 		); err != nil {
 			return nil, fmt.Errorf("scan match row: %w", err)
 		}
 
 		out[mID] = types.MatchRow{
-			MatchID:         mID,
-			EndOfGameResult: endRes,
-			GameDurationSec: gameDur,
-			GameStart:       gameStart,
-			GameVersion:     version,
-			QueueID:         queueID,
-			WinningTeam:     int(winningTeamI16),
-			BansBlue:        bansBlue,
-			BansRed:         bansRed,
+			MatchID:                   mID,
+			EndOfGameResult:           endRes,
+			GameDurationSec:           gameDur,
+			GameEndedInEarlySurrender: gameEndedInEarlySurrender,
+			GameStart:                 gameStart,
+			GameVersion:               version,
+			QueueID:                   queueID,
+			WinningTeam:               int(winningTeamI16),
+			BansBlue:                  bansBlue,
+			BansRed:                   bansRed,
 		}
 	}
 	if err := rows.Err(); err != nil {
@@ -457,9 +460,10 @@ func AddMatchData(ctx context.Context, pool *pgxpool.Pool, matchData []types.Lea
 			queue_id,
 			winning_team,
 			bans_blue,
-			bans_red
+			bans_red,
+			game_ended_in_early_surrender
 		)
-		VALUES ($1,$2,$3,$4,$5,$6,$7::smallint,$8::int[],$9::int[])
+		VALUES ($1,$2,$3,$4,$5,$6,$7::smallint,$8::int[],$9::int[],$10)
 	`
 
 	const insertParticipant = `
@@ -535,6 +539,7 @@ func AddMatchData(ctx context.Context, pool *pgxpool.Pool, matchData []types.Lea
 			m.WinningTeam,
 			bansBlue,
 			bansRed,
+			m.GameEndedInEarlySurrender,
 		)
 
 		// match_participants row
