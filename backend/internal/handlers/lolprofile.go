@@ -95,10 +95,6 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		riotAccount, err := client.GetSummonerPUUID(req)
-		userProfile.PUUID = riotAccount.Puuid
-		userProfile.GameName = riotAccount.GameName
-		userProfile.TagLine = riotAccount.TagLine
-		userProfile.LastUpdated = time.Now()
 
 		if err != nil {
 			var httpErr *types.HTTPError
@@ -109,12 +105,16 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					"could not fetch summoner",
 					httpErr.StatusCode,
 				)
+				return
 			} else {
 				log.Printf("GetSummonerPUUID internal error: %v", err)
 				http.Error(w, "internal server error", http.StatusInternalServerError)
 			}
 
-			return
+			userProfile.PUUID = riotAccount.Puuid
+			userProfile.GameName = riotAccount.GameName
+			userProfile.TagLine = riotAccount.TagLine
+			userProfile.LastUpdated = time.Now()
 		}
 		// Only early terminating if PUUID fetch fails. If other client requests fail
 		// the userProfile is constructed with any successfully received data.
@@ -178,9 +178,10 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	matchDataMap, err := lolprofilesvc.ConstructMatchDataMap(ctx, h.pool, matchIDs)
 	if err != nil {
 		log.Printf(
-			"Error constructing matchDataMap PUUID: %s\nmatchIDs: %s",
+			"Error constructing matchDataMap PUUID: %s\nmatchIDs: %s\nerr: %v",
 			userProfile.PUUID,
 			matchIDs,
+			err,
 		)
 	}
 
@@ -247,6 +248,12 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		} else {
 			log.Print("Summoner icon and level successfully addded")
 		}
+	}
+
+	// Recently played with and against
+	userProfile.PlayedWith, userProfile.PlayedAgainst, err = utils.ConstructRecentlyPlayedWithAndAgainst(userProfile.MatchData, userProfile.PUUID)
+	if err != nil {
+		log.Printf("error constructing recently played with: %v", err)
 	}
 
 	// Writing to file for dev

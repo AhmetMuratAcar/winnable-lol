@@ -94,23 +94,25 @@ type LeagueRank struct {
 
 type PlayedSummoner struct {
 	GameName    string `json:"gameName"`
+	TagLine     string `json:"tagLine"`
 	GamesPlayed int    `json:"gamesPlayed"`
 	Wins        int    `json:"wins"`
 	Losses      int    `json:"losses"`
 }
 
 type LeagueProfilePage struct {
-	PUUID              string               `json:"PUUID"`
-	ProfileIconID      int                  `json:"profileIconId"`
-	GameName           string               `json:"gameName"`
-	TagLine            string               `json:"tagLine"`
-	Region             string               `json:"region"`
-	Level              int                  `json:"summonerLevel"`
-	LastUpdated        time.Time            `json:"lastUpdated"`
-	Ranks              []LeagueRank         `json:"ranks"`
-	MasteryData        MasteryData          `json:"masteryData"`
-	MatchData          []LeagueMatch        `json:"matchData"`
-	RecentlyPlayedWith []PlayedSummoner `json:"recentlyPlayedWith"`
+	PUUID         string           `json:"PUUID"`
+	ProfileIconID int              `json:"profileIconId"`
+	GameName      string           `json:"gameName"`
+	TagLine       string           `json:"tagLine"`
+	Region        string           `json:"region"`
+	Level         int              `json:"summonerLevel"`
+	LastUpdated   time.Time        `json:"lastUpdated"`
+	Ranks         []LeagueRank     `json:"ranks"`
+	MasteryData   MasteryData      `json:"masteryData"`
+	MatchData     []LeagueMatch    `json:"matchData"`
+	PlayedWith    []PlayedSummoner `json:"recentlyPlayedWith"`
+	PlayedAgainst []PlayedSummoner `json:"recentlyPlayedAgainst"`
 }
 
 // Removed the challenges and PlayerScore data from the RawMatchResponse struct because the
