@@ -72,17 +72,20 @@ func ConstructRecentlyPlayedWithAndAgainst(
 			} else {
 				entry.Losses++
 			}
-			bucket[key] = entry
 
 			if p.Team == selfTeam {
 				if endTs > lastSeenWith[key] {
 					lastSeenWith[key] = endTs
+					entry.ProfileIconID = p.ProfileIconID
 				}
 			} else {
 				if endTs > lastSeenAgainst[key] {
 					lastSeenAgainst[key] = endTs
+					entry.ProfileIconID = p.ProfileIconID
 				}
 			}
+			
+			bucket[key] = entry
 		}
 	}
 

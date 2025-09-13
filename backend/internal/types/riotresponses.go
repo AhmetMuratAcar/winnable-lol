@@ -93,11 +93,12 @@ type LeagueRank struct {
 }
 
 type PlayedSummoner struct {
-	GameName    string `json:"gameName"`
-	TagLine     string `json:"tagLine"`
-	GamesPlayed int    `json:"gamesPlayed"`
-	Wins        int    `json:"wins"`
-	Losses      int    `json:"losses"`
+	GameName      string `json:"gameName"`
+	TagLine       string `json:"tagLine"`
+	GamesPlayed   int    `json:"gamesPlayed"`
+	Wins          int    `json:"wins"`
+	Losses        int    `json:"losses"`
+	ProfileIconID int    `json:"profileIconID"`
 }
 
 type LeagueProfilePage struct {
