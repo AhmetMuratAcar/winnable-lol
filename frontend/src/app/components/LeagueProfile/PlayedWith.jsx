@@ -73,7 +73,7 @@ export default function PlayedWith({ playedWith, playedAgainst, gameCount }) {
         <div className="py-1 text-gray-400 grid grid-cols-[50%_15%_20%_15%] text-sm border-t border-b border-(--contrast-border) text-left [&_div:nth-child(n+2)]:text-center pl-3">
           <div>Summoner</div>
           <div>Played</div>
-          <div>W-L</div>
+          <div>W - L</div>
           <div>WR</div>
         </div>
         {activeTab === "with" && (
