@@ -84,7 +84,7 @@ func ConstructRecentlyPlayedWithAndAgainst(
 					entry.ProfileIconID = p.ProfileIconID
 				}
 			}
-			
+
 			bucket[key] = entry
 		}
 	}
