@@ -6,7 +6,7 @@ export default function RanksSection({ rankData = [] }) {
   const flex = rankData.find((item) => item.queueType === "RANKED_FLEX_SR");
 
   function RankCard(rank, label) {
-    const winRate = rank ? `${Math.round((rank.wins / (rank.wins + rank.losses)) * 100)}%` : null;
+    const winRate = rank ? Math.round((rank.wins / (rank.wins + rank.losses)) * 100) : null;
 
     return (
       <div className="p-4 rounded border-1 border-(--contrast-border) bg-(--contrast) text-white">
@@ -16,28 +16,35 @@ export default function RanksSection({ rankData = [] }) {
         </div>
 
         {rank && (
-          <div className="flex items-center border-t-1 border-(--contrast-border)">
-            <div className="flex items-center gap-4">
-              <Image
-                src={`/images/Ranked-Emblems/Rank=${rank.tier}.png`}
-                alt={`${label} queue emblem`}
-                width={62}
-                height={62}
-              />
-              <div className="leading-tight">
-                <p className="text-l font-extrabold">
-                  {rank.tier.charAt(0) + rank.tier.slice(1).toLowerCase()}{" "}
-                  {rankNumeralToNum(rank.rank)}
+          <div>
+            <div className="flex items-center border-t-1 border-(--contrast-border)">
+              <div className="flex items-center gap-4">
+                <Image
+                  src={`/images/Ranked-Emblems/Rank=${rank.tier}.png`}
+                  alt={`${label} queue emblem`}
+                  width={62}
+                  height={62}
+                />
+                <div className="leading-tight">
+                  <p className="text-l font-extrabold">
+                    {rank.tier.charAt(0) + rank.tier.slice(1).toLowerCase()}{" "}
+                    {rankNumeralToNum(rank.rank)}
+                  </p>
+                  <p className="text-gray-400 text-sm">{rank.leaguePoints} LP</p>
+                </div>
+              </div>
+
+              <div className="ml-auto text-right leading-tight">
+                <p className="text-sm">
+                  {rank.wins}W {rank.losses}L
                 </p>
-                <p className="text-gray-400 text-sm">{rank.leaguePoints} LP</p>
+                <p className="text-gray-400 text-sm">Win Rate: {winRate}%</p>
               </div>
             </div>
 
-            <div className="ml-auto text-right leading-tight">
-              <p className="text-sm">
-                {rank.wins}W {rank.losses}L
-              </p>
-              <p className="text-gray-400 text-sm">Win Rate: {winRate}</p>
+            <div className="mt-2 h-2 w-full flex rounded overflow-hidden">
+              <div className="bg-green-500" style={{ width: `${winRate}%` }} />
+              <div className="bg-(--pastel-red)" style={{ width: `${100 - winRate}%` }} />
             </div>
           </div>
         )}
