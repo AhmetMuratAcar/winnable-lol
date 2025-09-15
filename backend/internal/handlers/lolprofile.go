@@ -110,12 +110,12 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				log.Printf("GetSummonerPUUID internal error: %v", err)
 				http.Error(w, "internal server error", http.StatusInternalServerError)
 			}
-
-			userProfile.PUUID = riotAccount.Puuid
-			userProfile.GameName = riotAccount.GameName
-			userProfile.TagLine = riotAccount.TagLine
-			userProfile.LastUpdated = time.Now()
 		}
+
+		userProfile.PUUID = riotAccount.Puuid
+		userProfile.GameName = riotAccount.GameName
+		userProfile.TagLine = riotAccount.TagLine
+		userProfile.LastUpdated = time.Now()
 		// Only early terminating if PUUID fetch fails. If other client requests fail
 		// the userProfile is constructed with any successfully received data.
 	}
