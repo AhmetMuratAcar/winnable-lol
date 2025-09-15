@@ -9,8 +9,6 @@ function PlayerRow({ item, region, baseProfileIconPath }) {
     <div className="border-b border-(--contrast-border)">
       <a
         href={`/lol/summoners/${region}/${item.gameName}-${item.tagLine}`}
-        target="_blank"
-        rel="noopener noreferrer"
         className="grid grid-cols-[50%_15%_20%_15%] items-center gap-x-0 py-1 pl-3 text-left hover:bg-(--background)"
       >
         <div className="flex items-center gap-2 min-w-0">
