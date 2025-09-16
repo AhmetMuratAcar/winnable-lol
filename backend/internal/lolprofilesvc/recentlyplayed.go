@@ -6,6 +6,8 @@ import (
 	"winnable/internal/types"
 )
 
+func UpdateRecentlyPlayedWithAndAgainst() {}
+
 func ConstructRecentlyPlayedWithAndAgainst(
 	matches []types.LeagueMatch,
 	selfPUUID string,
