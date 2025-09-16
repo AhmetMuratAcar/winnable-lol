@@ -37,7 +37,7 @@ export default function ProfileSection({ data }) {
           </div>
 
           <div id="rightProfile" className="flex flex-col w-7/10 space-y-3">
-            <RecentGames />
+            <RecentGames recentGames={data.recentGames} totalGameCount={data.matchData.length}/>
             <GamesSection />
           </div>
         </div>
