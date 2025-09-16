@@ -251,7 +251,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Recently played with and against
-	userProfile.PlayedWith, userProfile.PlayedAgainst, err = utils.ConstructRecentlyPlayedWithAndAgainst(userProfile.MatchData, userProfile.PUUID)
+	userProfile.PlayedWith, userProfile.PlayedAgainst, err = lolprofilesvc.ConstructRecentlyPlayedWithAndAgainst(userProfile.MatchData, userProfile.PUUID)
 	if err != nil {
 		log.Printf("error constructing recently played with: %v", err)
 	}
