@@ -101,6 +101,24 @@ type PlayedSummoner struct {
 	ProfileIconID int    `json:"profileIconID"`
 }
 
+type LeagueMatchSummary struct {
+	ChampionID    int    `json:"championID"`
+	OppChampionID int    `json:"oppChampionID"`
+	Role          string `json:"role"`
+	Kills         int    `json:"kills"`
+	Deaths        int    `json:"deaths"`
+	Assists       int    `json:"assists"`
+	DidWin        bool   `json:"didWin"`
+}
+
+type GamesSummary struct {
+	Wins           int                  `json:"wins"`
+	Losses         int                  `json:"losses"`
+	MatchSummaries []LeagueMatchSummary `json:"matchSummaries"`
+	KDAsByRole     map[string]float64   `json:"KDAsByRole"`
+	TotalKDA       float64              `json:"totalKDA"`
+}
+
 type LeagueProfilePage struct {
 	PUUID         string           `json:"PUUID"`
 	ProfileIconID int              `json:"profileIconId"`
@@ -114,6 +132,7 @@ type LeagueProfilePage struct {
 	MatchData     []LeagueMatch    `json:"matchData"`
 	PlayedWith    []PlayedSummoner `json:"recentlyPlayedWith"`
 	PlayedAgainst []PlayedSummoner `json:"recentlyPlayedAgainst"`
+	RecentGames   GamesSummary     `json:"recentGames"`
 }
 
 // Removed the challenges and PlayerScore data from the RawMatchResponse struct because the

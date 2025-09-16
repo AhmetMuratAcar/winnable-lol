@@ -250,10 +250,19 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Recently played with and against
+	// Summary components' data
 	userProfile.PlayedWith, userProfile.PlayedAgainst, err = lolprofilesvc.ConstructRecentlyPlayedWithAndAgainst(userProfile.MatchData, userProfile.PUUID)
 	if err != nil {
 		log.Printf("error constructing recently played with: %v", err)
+	} else {
+		log.Print("recently played with constructed")
+	}
+
+	userProfile.RecentGames, err = lolprofilesvc.ConstructGamesSummary(userProfile.MatchData, userProfile.PUUID)
+	if err != nil {
+		log.Printf("error constructing games summary: %v", err)
+	} else {
+		log.Print("games summary constructed")
 	}
 
 	// Writing to file for dev
