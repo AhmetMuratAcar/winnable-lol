@@ -25,7 +25,7 @@ export default function ProfileHeader({ headerData }) {
             alt="summoner profile icon"
             width={100}
             height={100}
-            className="rounded-lg"
+            className="rounded-lg border border-(--contrast-border)"
           />
           <p
             className="
@@ -33,7 +33,7 @@ export default function ProfileHeader({ headerData }) {
               bottom-0 translate-y-1/2
               min-w-[3ch] text-center
               bg-gray-800 text-white text-sm font-semibold
-              px-2 py-0.5 rounded-md shadow-md
+              px-2 py-0.5 rounded-md shadow-md border border-(--contrast-border)
             "
           >
             {summonerLevel}
