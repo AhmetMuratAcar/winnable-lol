@@ -109,6 +109,7 @@ type LeagueMatchSummary struct {
 	Deaths        int    `json:"deaths"`
 	Assists       int    `json:"assists"`
 	DidWin        bool   `json:"didWin"`
+	QueueID       int    `json:"queueID"`
 }
 
 type GamesSummary struct {

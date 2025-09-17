@@ -50,6 +50,7 @@ func ConstructGamesSummary(matches []types.LeagueMatch, PUUID string) (types.Gam
 			Kills:         user.Kills,
 			Deaths:        user.Deaths,
 			Assists:       user.Assists,
+			QueueID:       m.QueueId,
 		}
 
 		if m.WinningTeam == user.Team {
