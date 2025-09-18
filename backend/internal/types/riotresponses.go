@@ -112,12 +112,15 @@ type LeagueMatchSummary struct {
 	QueueID       int    `json:"queueID"`
 }
 
+type WinLoss struct {
+	Wins   int `json:"wins"`
+	Losses int `json:"losses"`
+}
+
 type GamesSummary struct {
-	Wins           int                  `json:"wins"`
-	Losses         int                  `json:"losses"`
 	MatchSummaries []LeagueMatchSummary `json:"matchSummaries"`
 	KDAsByRole     map[string]float64   `json:"KDAsByRole"`
-	TotalKDA       float64              `json:"totalKDA"`
+	RecordByRole   map[string]WinLoss   `json:"recordByRole"`
 }
 
 type LeagueProfilePage struct {

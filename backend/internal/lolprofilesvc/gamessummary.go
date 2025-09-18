@@ -2,6 +2,7 @@ package lolprofilesvc
 
 import (
 	"fmt"
+	"maps"
 	"winnable/internal/types"
 )
 
@@ -12,12 +13,18 @@ func ConstructGamesSummary(matches []types.LeagueMatch, PUUID string) (types.Gam
 		return types.GamesSummary{}, fmt.Errorf("no matches provided")
 	}
 
+	summary := types.GamesSummary{
+		KDAsByRole:   make(map[string]float64),
+		RecordByRole: make(map[string]types.WinLoss),
+	}
+
 	kpaByRole := make(map[string]int)
 	deathsByRole := make(map[string]int)
+	winLossByRole := make(map[string]types.WinLoss)
 	totalKPA := 0
 	totalDeaths := 0
-
-	summary := types.GamesSummary{KDAsByRole: make(map[string]float64)}
+	totalWins := 0
+	totalLosses := 0
 
 	for _, m := range matches {
 		if m.GameEndedInEarlySurrender {
@@ -53,13 +60,17 @@ func ConstructGamesSummary(matches []types.LeagueMatch, PUUID string) (types.Gam
 			QueueID:       m.QueueId,
 		}
 
+		wl := winLossByRole[currSummary.Role]
 		if m.WinningTeam == user.Team {
 			currSummary.DidWin = true
-			summary.Wins++
+			wl.Wins++
+			totalWins++
 		} else {
 			currSummary.DidWin = false
-			summary.Losses++
+			wl.Losses++
+			totalLosses++
 		}
+		winLossByRole[currSummary.Role] = wl
 
 		// finding lane opponent
 		for _, o := range m.Participants {
@@ -92,7 +103,11 @@ func ConstructGamesSummary(matches []types.LeagueMatch, PUUID string) (types.Gam
 	if totalDeaths == 0 {
 		totalDeaths = 1
 	}
-	summary.TotalKDA = float64(totalKPA) / float64(totalDeaths)
+	summary.KDAsByRole["ALL"] = float64(totalKPA) / float64(totalDeaths)
+
+	// W/L assignment
+	maps.Copy(summary.RecordByRole, winLossByRole)
+	summary.RecordByRole["ALL"] = types.WinLoss{Wins: totalWins, Losses: totalLosses}
 
 	return summary, nil
 }
