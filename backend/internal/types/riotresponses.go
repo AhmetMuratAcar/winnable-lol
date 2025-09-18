@@ -112,15 +112,20 @@ type LeagueMatchSummary struct {
 	QueueID       int    `json:"queueID"`
 }
 
-type WinLoss struct {
-	Wins   int `json:"wins"`
-	Losses int `json:"losses"`
+type RoleSummary struct {
+	Kills   int `json:"kills"`
+	Deaths  int `json:"deaths"`
+	Assists int `json:"assists"`
+	Games   int `json:"games"`
+	Wins    int `json:"wins"`
+	Losses  int `json:"losses"`
 }
 
 type GamesSummary struct {
-	MatchSummaries []LeagueMatchSummary `json:"matchSummaries"`
-	KDAsByRole     map[string]float64   `json:"KDAsByRole"`
-	RecordByRole   map[string]WinLoss   `json:"recordByRole"`
+	MatchSummaries []LeagueMatchSummary   `json:"matchSummaries"`
+	TotalsAll      RoleSummary            `json:"totalsALl"`
+	TotalsByRole   map[string]RoleSummary `json:"totalsByRole"`
+	TotalsByQueue  map[int]RoleSummary    `json:"totalsByQueue"`
 }
 
 type LeagueProfilePage struct {

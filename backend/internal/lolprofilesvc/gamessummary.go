@@ -14,17 +14,11 @@ func ConstructGamesSummary(matches []types.LeagueMatch, PUUID string) (types.Gam
 	}
 
 	summary := types.GamesSummary{
-		KDAsByRole:   make(map[string]float64),
-		RecordByRole: make(map[string]types.WinLoss),
+		TotalsByRole:  make(map[string]types.RoleSummary),
+		TotalsByQueue: make(map[int]types.RoleSummary),
 	}
-
-	kpaByRole := make(map[string]int)
-	deathsByRole := make(map[string]int)
-	winLossByRole := make(map[string]types.WinLoss)
-	totalKPA := 0
-	totalDeaths := 0
-	totalWins := 0
-	totalLosses := 0
+	roleTotals := make(map[string]types.RoleSummary)
+	queueTotals := make(map[int]types.RoleSummary)
 
 	for _, m := range matches {
 		if m.GameEndedInEarlySurrender {
@@ -60,18 +54,6 @@ func ConstructGamesSummary(matches []types.LeagueMatch, PUUID string) (types.Gam
 			QueueID:       m.QueueId,
 		}
 
-		wl := winLossByRole[currSummary.Role]
-		if m.WinningTeam == user.Team {
-			currSummary.DidWin = true
-			wl.Wins++
-			totalWins++
-		} else {
-			currSummary.DidWin = false
-			wl.Losses++
-			totalLosses++
-		}
-		winLossByRole[currSummary.Role] = wl
-
 		// finding lane opponent
 		for _, o := range m.Participants {
 			if o.TeamPosition == user.TeamPosition && o.PUUID != user.PUUID && o.Team != user.Team {
@@ -79,35 +61,35 @@ func ConstructGamesSummary(matches []types.LeagueMatch, PUUID string) (types.Gam
 				break
 			}
 		}
-
-		// accumulating aggregates
-		kpa := currSummary.Kills + currSummary.Assists
-		kpaByRole[currSummary.Role] += kpa
-		deathsByRole[currSummary.Role] += currSummary.Deaths
-
-		totalKPA += kpa
-		totalDeaths += currSummary.Deaths
-
 		summary.MatchSummaries = append(summary.MatchSummaries, currSummary)
+
+		// totals calcs
+		didWin := m.WinningTeam == user.Team
+		qt := queueTotals[m.QueueId]
+		updateTotals(&qt, user.Kills, user.Deaths, user.Assists, didWin)
+		queueTotals[m.QueueId] = qt
+
+		rt := roleTotals[user.TeamPosition]
+		updateTotals(&rt, user.Kills, user.Deaths, user.Assists, didWin)
+		roleTotals[user.TeamPosition] = rt
+
+		updateTotals(&summary.TotalsAll, user.Kills, user.Deaths, user.Assists, didWin)
 	}
 
-	// calc KDAs from aggregates
-	for role := range kpaByRole {
-		d := deathsByRole[role]
-		if d == 0 {
-			d = 1
-		}
-		summary.KDAsByRole[role] = float64(kpaByRole[role]) / float64(d)
-	}
-
-	if totalDeaths == 0 {
-		totalDeaths = 1
-	}
-	summary.KDAsByRole["ALL"] = float64(totalKPA) / float64(totalDeaths)
-
-	// W/L assignment
-	maps.Copy(summary.RecordByRole, winLossByRole)
-	summary.RecordByRole["ALL"] = types.WinLoss{Wins: totalWins, Losses: totalLosses}
+	maps.Copy(summary.TotalsByQueue, queueTotals)
+	maps.Copy(summary.TotalsByRole, roleTotals)
 
 	return summary, nil
+}
+
+func updateTotals(rs *types.RoleSummary, kills, deaths, assists int, didWin bool) {
+	rs.Kills += kills
+	rs.Deaths += deaths
+	rs.Assists += assists
+	rs.Games++
+	if didWin {
+		rs.Wins++
+	} else {
+		rs.Losses++
+	}
 }
