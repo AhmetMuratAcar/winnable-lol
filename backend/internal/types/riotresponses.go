@@ -123,7 +123,7 @@ type RoleSummary struct {
 
 type GamesSummary struct {
 	MatchSummaries []LeagueMatchSummary   `json:"matchSummaries"`
-	TotalsAll      RoleSummary            `json:"totalsALl"`
+	TotalsAll      RoleSummary            `json:"totalsAll"`
 	TotalsByRole   map[string]RoleSummary `json:"totalsByRole"`
 	TotalsByQueue  map[int]RoleSummary    `json:"totalsByQueue"`
 }
