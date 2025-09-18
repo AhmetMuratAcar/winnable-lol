@@ -44,6 +44,7 @@ func ConstructGamesSummary(matches []types.LeagueMatch, PUUID string) (types.Gam
 		}
 
 		user := m.Participants[userIndex]
+		didWin := m.WinningTeam == user.Team
 		currSummary := types.LeagueMatchSummary{
 			ChampionID:    user.ChampionID,
 			OppChampionID: -1, // defaulting for now
@@ -52,6 +53,7 @@ func ConstructGamesSummary(matches []types.LeagueMatch, PUUID string) (types.Gam
 			Deaths:        user.Deaths,
 			Assists:       user.Assists,
 			QueueID:       m.QueueId,
+			DidWin:        didWin,
 		}
 
 		// finding lane opponent
@@ -64,7 +66,6 @@ func ConstructGamesSummary(matches []types.LeagueMatch, PUUID string) (types.Gam
 		summary.MatchSummaries = append(summary.MatchSummaries, currSummary)
 
 		// totals calcs
-		didWin := m.WinningTeam == user.Team
 		qt := queueTotals[m.QueueId]
 		updateTotals(&qt, user.Kills, user.Deaths, user.Assists, didWin)
 		queueTotals[m.QueueId] = qt
