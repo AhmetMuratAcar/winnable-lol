@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useState, useMemo } from "react";
+import { PieChart, Pie, Label, Tooltip, Cell } from "recharts";
 
 const roleKeyToName = {
   all: "All",
@@ -11,6 +12,54 @@ const roleKeyToName = {
   utility: "Support",
 };
 
+function WinLossDonut({ title, wins, losses }) {
+  const total = (wins || 0) + (losses || 0);
+
+  const chartData = useMemo(
+    () => [
+      { name: "Wins", value: wins || 0, class: "fill-green-500" },
+      { name: "Losses", value: losses || 0, class: "fill-(--pastel-red)" },
+    ],
+    [wins, losses],
+  );
+
+  const winRate = useMemo(() => {
+    if (!total) return null;
+    return Math.round(((wins || 0) / total) * 100);
+  }, [wins, total]);
+
+  return (
+    <div className="flex flex-col items-center">
+      <PieChart width={100} height={100}>
+        <Pie
+          data={chartData}
+          dataKey="value"
+          nameKey="name"
+          innerRadius={30}
+          outerRadius={40}
+          paddingAngle={2}
+          stroke="none"
+        >
+          {chartData.map((entry, index) => (
+            <Cell key={index} className={entry.class} />
+          ))}
+
+          <Label
+            value={winRate == null ? "—" : `${winRate}%`}
+            position="center"
+            className={`font-bold ${winRate != null && winRate < 50 ? "fill-red-500" : "fill-green-500"}`}
+          />
+        </Pie>
+        <Tooltip
+          formatter={(value, name) => [`${value}`, name]}
+          contentStyle={{ background: "#1f2937", borderRadius: "4px", border: "none" }}
+          itemStyle={{ color: "#fff" }}
+        />
+      </PieChart>
+    </div>
+  );
+}
+
 export default function RecentGames({ recentGames, totalGameCount }) {
   // No games played
   if (totalGameCount === 0) {
@@ -19,7 +68,7 @@ export default function RecentGames({ recentGames, totalGameCount }) {
         <h3 className="font-semibold border-b-1 border-(--contrast-border) mb-3">
           Recent Ranked Games
         </h3>
-        <p>You have no recent games played</p>
+        <p className="text-gray-400 italic">You have no recent games played</p>
       </div>
     );
   }
@@ -31,7 +80,7 @@ export default function RecentGames({ recentGames, totalGameCount }) {
         <h3 className="font-semibold border-b-1 border-(--contrast-border) mb-3">
           Recent Ranked Games
         </h3>
-        <p>
+        <p className="text-gray-400 italic">
           You have no ranked games in your last {totalGameCount} game
           {totalGameCount > 1 ? "s" : ""}
         </p>
@@ -56,7 +105,7 @@ export default function RecentGames({ recentGames, totalGameCount }) {
     { key: 440, label: "Flex", rounded: "rounded-r" },
   ];
 
-  const roleKeyToApi = (k) => (k === "all" ? "ALL" : k.toUpperCase());
+  const roleKeyToApi = (k) => k.toUpperCase();
 
   // Filtering by active role and queue
   const filtered = useMemo(() => {
@@ -72,36 +121,64 @@ export default function RecentGames({ recentGames, totalGameCount }) {
 
   // Compute quick stats for the filtered set
   const stats = useMemo(() => {
-    if (active === "all" && activeQueue === "all") {
-      return {
-        wins: recentGames.wins,
-        losses: recentGames.losses,
-        kda: recentGames.totalKDA,
-      };
+    if (!recentGames) {
+      return { wins: 0, losses: 0, kda: 0.0 };
     }
 
-    let wins = 0;
-    let losses = 0;
-    for (const g of filteredByQueue) {
-      g.didWin ? wins++ : losses++;
+    const summaries = recentGames.matchSummaries ?? [];
+    const apiRole = roleKeyToApi(active);
+    const qKey = String(activeQueue);
+
+    // : { kills; deaths; assists; wins; losses; games }
+    const kdaFromTotals = (t) => {
+      if (!t || !t.games) return { wins: 0, losses: 0, kda: 0.0 };
+      const { kills, deaths, assists, wins, losses } = t;
+      const kda = deaths === 0 ? kills + assists : (kills + assists) / deaths;
+      return { wins, losses, kda };
+    };
+
+    if (active === "all" && activeQueue === "all" && recentGames.totalsAll) {
+      return kdaFromTotals(recentGames.totalsAll);
     }
 
     if (active !== "all" && activeQueue === "all") {
-      const apiRole = roleKeyToApi(active);
-      const fromServer = recentGames.KDAsByRole?.[apiRole];
-      return { wins, losses, kda: fromServer !== undefined ? fromServer : 0 };
+      const t = recentGames.totalsByRole?.[apiRole];
+      if (t) return kdaFromTotals(t);
+      return { wins: 0, losses: 0, kda: null };
     }
 
-    let k = 0,
-      d = 0,
-      a = 0;
-    for (const g of filteredByQueue) {
-      k += g.kills || 0;
-      d += g.deaths || 0;
-      a += g.assists || 0;
+    if (active === "all" && activeQueue !== "all") {
+      const t = recentGames.totalsByQueue?.[qKey];
+      if (t) return kdaFromTotals(t);
+      return { wins: 0, losses: 0, kda: null };
     }
-    const kda = filteredByQueue.length ? (k + a) / Math.max(1, d) : 0;
-    return { wins, losses, kda };
+
+    const base =
+      activeQueue !== "all" && Array.isArray(recentGames.filteredByQueue)
+        ? recentGames.filteredByQueue // if you keep a pre-filtered array around
+        : summaries;
+
+    const filtered = base.filter((m) => {
+      const okRole = active === "all" ? true : m.role === apiRole;
+      const okQueue = activeQueue === "all" ? true : String(m.queueID) === qKey;
+      return okRole && okQueue;
+    });
+
+    if (!filtered.length) return { wins: 0, losses: 0, kda: null };
+
+    const agg = filtered.reduce(
+      (a, m) => {
+        a.k += m.kills;
+        a.d += m.deaths;
+        a.a += m.assists;
+        m.didWin ? a.w++ : a.l++;
+        return a;
+      },
+      { k: 0, d: 0, a: 0, w: 0, l: 0 },
+    );
+
+    const kda = agg.d === 0 ? agg.k + agg.a : (agg.k + agg.a) / agg.d;
+    return { wins: agg.w, losses: agg.l, kda };
   }, [active, activeQueue, filteredByQueue, recentGames]);
 
   // default
@@ -163,31 +240,75 @@ export default function RecentGames({ recentGames, totalGameCount }) {
 
       {/* Displaying raw data for now */}
       <div className="mt-4 text-sm">
-        <div className="mb-2 text-gray-300">
-          Showing: <span className="font-semibold">{roleKeyToName[active]}</span> •{" "}
-          {filteredByQueue.length} game{filteredByQueue.length !== 1 ? "s" : ""} — {stats.wins}W-
-          {stats.losses}L • KDA {stats.kda.toFixed(2)}
-        </div>
+        {(() => {
+          const summaries = recentGames?.matchSummaries ?? [];
+          const totalsAll = recentGames?.totalsAll ?? recentGames?.totalsALl; // tolerate typo
+          const apiRole = roleKeyToApi(active).toUpperCase();
+          const qKey = String(activeQueue);
 
-        {filteredByQueue.length === 0 ? (
-          <div className="text-gray-400 italic">No games for this selection.</div>
-        ) : (
-          <ul className="space-y-1">
-            {filteredByQueue.map((g, i) => (
-              <li
-                key={i}
-                className="flex items-center justify-between rounded border-1 border-(--contrast-border) px-2 py-1"
-              >
-                <span className="text-gray-300">
-                  Champ #{g.championID} vs #{g.oppChampionID} • {g.role} • Q{g.queueID}
-                </span>
-                <span className="text-gray-400">
-                  {g.kills}/{g.deaths}/{g.assists} • {g.didWin ? "Win" : "Loss"}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
+          // Decide which games to render in the list
+          const displayedGames =
+            active !== "all" && activeQueue !== "all"
+              ? summaries.filter((m) => m.role === apiRole && String(m.queueID) === qKey)
+              : active === "all" && activeQueue !== "all"
+                ? filteredByQueue // queue-only selection (fast path you already maintain)
+                : active !== "all" && activeQueue === "all"
+                  ? summaries.filter((m) => m.role === apiRole)
+                  : summaries; // all/all
+
+          // Show count from pre-aggregates when possible
+          const shownCount =
+            active === "all" && activeQueue === "all"
+              ? (totalsAll?.games ?? displayedGames.length)
+              : active !== "all" && activeQueue === "all"
+                ? (recentGames?.totalsByRole?.[apiRole]?.games ?? displayedGames.length)
+                : active === "all" && activeQueue !== "all"
+                  ? (recentGames?.totalsByQueue?.[qKey]?.games ?? displayedGames.length)
+                  : displayedGames.length;
+
+          const kdaText = stats.kda == null ? "—" : stats.kda.toFixed(2);
+
+          return (
+            <>
+              <div className="mb-2 text-gray-300">
+                Showing: <span className="font-semibold">{roleKeyToName[active]}</span> •{" "}
+                {shownCount} game{shownCount !== 1 ? "s" : ""} — {stats.wins}W-{stats.losses}L • KDA{" "}
+                {kdaText}
+              </div>
+
+              {shownCount === 0 ? (
+                <div className="text-gray-400 italic">No games for this selection.</div>
+              ) : (
+                <div>
+                  {/* NEW: win/loss donut for current role/queue tab */}
+                  <div className="mb-3 flex justify-center">
+                    <WinLossDonut
+                      title={`${roleKeyToName[active]} • ${activeQueue === "all" ? "All Queues" : `Q${activeQueue}`}`}
+                      wins={stats.wins}
+                      losses={stats.losses}
+                    />
+                  </div>
+
+                  <ul className="space-y-1">
+                    {displayedGames.map((g, i) => (
+                      <li
+                        key={i}
+                        className="flex items-center justify-between rounded border-1 border-(--contrast-border) px-2 py-1"
+                      >
+                        <span className="text-gray-300">
+                          Champ #{g.championID} vs #{g.oppChampionID} • {g.role} • Q{g.queueID}
+                        </span>
+                        <span className="text-gray-400">
+                          {g.kills}/{g.deaths}/{g.assists} • {g.didWin ? "Win" : "Loss"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          );
+        })()}
       </div>
     </div>
   );
