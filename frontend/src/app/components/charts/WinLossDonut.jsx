@@ -43,8 +43,13 @@ export default function WinLossDonut({ wins, losses }) {
         </Pie>
         <Tooltip
           formatter={(value, name) => [`${value}`, name]}
-          contentStyle={{ background: "#1f2937", borderRadius: "4px", border: "none" }}
+          contentStyle={{
+            background: "var(--contrast)",
+            borderRadius: "4px",
+            borderColor: "var(--contrast-border)",
+          }}
           itemStyle={{ color: "#fff" }}
+          position={{ x: 100, y: 20 }}
         />
       </PieChart>
     </div>
