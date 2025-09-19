@@ -186,7 +186,7 @@ export default function RecentGames({ recentGames, totalGameCount }) {
                   width={20}
                   height={20}
                   alt={`${label} role icon`}
-                  style={{ width: "20px", height: "20px" }}
+                  style={{ width: "20px", height: "auto" }}
                 />
               </button>
             );
