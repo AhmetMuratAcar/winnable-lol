@@ -4,6 +4,23 @@ import { ProfileSection } from "@/app/components/LeagueProfile";
 import { regionTagToServerCode } from "@/lib/utils/stringUtils";
 import { redirect } from "next/navigation";
 
+export async function generateMetadata({ params }) {
+  const { slug } = await params;
+
+  if (typeof slug !== "string" || !slug.includes("-")) {
+    return { title: "Invalid Summoner | Winnable" };
+  }
+  
+  const [rawGameName, rawTagLine] = slug.split("-");
+  const gameName = decodeURIComponent(rawGameName || "");
+  const tagLine = decodeURIComponent(rawTagLine || "");
+
+  return {
+    title: `${gameName} ${tagLine ? `#${tagLine}` : ""} - Summoner Stats | Winnable`,
+    description: `Summoner stats for ${gameName}${tagLine ? ` #${tagLine}` : ""}.`,
+  };
+}
+
 export default async function SummonerPage({ params }) {
   const { region, slug } = await params;
 
