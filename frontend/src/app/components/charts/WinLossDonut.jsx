@@ -41,7 +41,7 @@ export default function WinLossDonut({ wins, losses }) {
             className={`font-bold ${winRate != null && winRate < 50 ? "fill-red-500" : "fill-green-500"}`}
           />
         </Pie>
-        <Tooltip
+        {/* <Tooltip
           formatter={(value, name) => [`${value}`, name]}
           contentStyle={{
             background: "var(--contrast)",
@@ -50,7 +50,7 @@ export default function WinLossDonut({ wins, losses }) {
           }}
           itemStyle={{ color: "#fff" }}
           position={{ x: 100, y: 20 }}
-        />
+        /> */}
       </PieChart>
     </div>
   );
