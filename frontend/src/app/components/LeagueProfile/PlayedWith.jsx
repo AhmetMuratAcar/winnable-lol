@@ -36,17 +36,18 @@ function PlayerRow({ item, region, baseProfileIconPath }) {
 }
 
 export default function PlayedWith({ playedWith, playedAgainst, gameCount }) {
+  const safePlayedWith = playedWith ?? [];
+  const safePlayedAgainst = playedAgainst ?? [];
   const [activeTab, setActiveTab] = useState("with");
   const region = usePathname().split("/")[3];
   const baseProfileIconPath = `${IMG_PATH}/${CURR_PATCH}/img/profileicon`;
-  const currData = activeTab === "width" ? playedWith : playedAgainst;
 
   return (
     <div className="pt-4 bg-(--contrast) rounded border-(--contrast-border) border-t border-l border-r mb-5">
       <div className="justify-items-center text-sm">
         <p>
           Recently Played {activeTab === "with" ? "With " : "Against "}
-          (Last {gameCount} Game{gameCount > 1 ? "s" : ""})
+          (Last {gameCount} Game{gameCount === 1 ? "" : "s"})
         </p>
       </div>
 
@@ -76,7 +77,7 @@ export default function PlayedWith({ playedWith, playedAgainst, gameCount }) {
         </div>
         {activeTab === "with" && (
           <div className="text-sm">
-            {playedWith.map((item, index) => (
+            {safePlayedWith.map((item, index) => (
               <PlayerRow
                 key={index}
                 item={item}
@@ -89,7 +90,7 @@ export default function PlayedWith({ playedWith, playedAgainst, gameCount }) {
 
         {activeTab === "against" && (
           <div className="text-sm">
-            {playedAgainst.map((item, index) => (
+            {safePlayedAgainst.map((item, index) => (
               <PlayerRow
                 key={index}
                 item={item}
