@@ -1,6 +1,4 @@
 "use client";
-import { ProfileHeader } from ".";
-import ProfileNavbar from "./ProfileNavbar";
 import RanksSection from "./RanksSection";
 import GamesSection from "./GamesSection";
 import RecentGames from "./RecentGames";
@@ -11,7 +9,6 @@ export default function ProfileOverview({ data }) {
     return <p>No profile data available.</p>;
   }
 
-  // const { gameName, tagLine, summonerLevel, ranks, masteryData } = data;
   const headerData = {
     gameName: data.gameName,
     tagLine: data.tagLine,
@@ -33,10 +30,7 @@ export default function ProfileOverview({ data }) {
       </div>
 
       <div id="rightProfile" className="flex flex-col w-7/10 space-y-3">
-        <RecentGames
-          recentGames={data.recentGames}
-          totalGameCount={data.matchData.length}
-        />
+        <RecentGames recentGames={data.recentGames} totalGameCount={data.matchData.length} />
         <GamesSection />
       </div>
     </div>
