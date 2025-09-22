@@ -1,6 +1,7 @@
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
-import { ProfileSection } from "@/app/components/LeagueProfile";
+import ProfileNavbar from "@/app/components/LeagueProfile/ProfileNavbar";
+import { ProfileHeader, ProfileOverview } from "@/app/components/LeagueProfile";
 import { regionTagToServerCode } from "@/lib/utils/stringUtils";
 import { redirect } from "next/navigation";
 
@@ -10,7 +11,7 @@ export async function generateMetadata({ params }) {
   if (typeof slug !== "string" || !slug.includes("-")) {
     return { title: "Invalid Summoner | Winnable" };
   }
-  
+
   const [rawGameName, rawTagLine] = slug.split("-");
   const gameName = decodeURIComponent(rawGameName || "");
   const tagLine = decodeURIComponent(rawTagLine || "");
@@ -54,36 +55,28 @@ export default async function SummonerPage({ params }) {
   }
 
   const profileData = await res.json();
-  if (process.env.NODE_ENV === "development") {
-    const {
-      profileIconId,
-      gameName,
-      tagLine,
-      summonerLevel,
-      ranks = [],
-      masteryData = {},
-      matchData = [],
-    } = profileData;
-
-    console.log("Fetched profile data:");
-    console.log("  profileIconId:", profileIconId);
-    console.log("  gameName:", gameName);
-    console.log("  tagLine:", tagLine);
-    console.log("  summonerLevel:", summonerLevel);
-
-    console.log("  ranks:");
-    ranks.forEach((rank, i) => {
-      console.log(`    [${i}]`, rank);
-    });
-
-    console.log("  masteryData length:", masteryData?.championMasteries?.length ?? 0);
-    console.log("  matchData length:", matchData?.length ?? 0);
-  }
+  const headerData = {
+    gameName: profileData.gameName,
+    tagLine: profileData.tagLine,
+    region: profileData.region,
+    summonerLevel: profileData.summonerLevel,
+    profileIconId: profileData.profileIconId,
+    lastUpdated: profileData.lastUpdated,
+  };
 
   return (
     <main className="min-h-svh flex flex-col bg-(--background)">
       <Header />
-      <ProfileSection data={profileData} />
+
+      <section id="ProfileOverview" className="flex-grow flex flex-col items-center gap-6">
+        <ProfileHeader headerData={headerData} />
+
+        <div className="w-7/10 space-y-3">
+          <ProfileNavbar />
+          <ProfileOverview data={profileData} />
+        </div>
+      </section>
+
       <Footer />
     </main>
   );
