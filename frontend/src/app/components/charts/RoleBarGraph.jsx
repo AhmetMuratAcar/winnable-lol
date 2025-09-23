@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { ResponsiveContainer, BarChart, Bar, XAxis } from "recharts";
+import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip } from "recharts";
 
 const ROLE_ICONS = {
   Top: "/images/roles/top.svg",
@@ -44,16 +44,23 @@ export default function RoleBarGraph({ roles }) {
           axisLine={false}
           height={40}
         />
+        <Tooltip
+          cursor={false}
+          contentStyle={{
+            background: "var(--contrast)",
+            borderRadius: 8,
+            borderColor: "var(--contrast-border)",
+          }}
+        />
 
-        {/* bottom stack gets the background track */}
         <Bar
-          dataKey="losses"
+          dataKey="wins"
           stackId="a"
-          fill="var(--pastel-red)"
+          fill="var(--color-green-500)"
           barSize={20}
           background={{ fill: "var(--contrast-border)" }}
         />
-        <Bar dataKey="wins" stackId="a" fill="var(--color-green-500)" barSize={20} />
+        <Bar dataKey="losses" stackId="a" fill="var(--pastel-red)" barSize={20} />
       </BarChart>
     </ResponsiveContainer>
   );

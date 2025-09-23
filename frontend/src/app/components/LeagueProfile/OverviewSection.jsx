@@ -19,7 +19,7 @@ export default function ProfileOverview({ data }) {
   };
 
   return (
-    <div className="flex space-x-4">
+    <div id="profileOverview" className="flex space-x-4">
       <div id="leftProfile" className="flex flex-col w-3/10 space-y-3">
         <RanksSection rankData={data.ranks} />
         <PlayedWith
