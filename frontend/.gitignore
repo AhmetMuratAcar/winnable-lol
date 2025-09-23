@@ -41,6 +41,6 @@ yarn-error.log*
 next-env.d.ts
 
 # static assets for dev
-public/images/dragontail-15.17.1
+public/images/dragontail*/
 public/images/Ranked-Emblems
 public/images/roles
