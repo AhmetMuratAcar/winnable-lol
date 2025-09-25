@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"winnable/internal/handlers"
+	"winnable/internal/handlers/lol"
 	"winnable/internal/middleware"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -61,7 +62,7 @@ func run() error {
 	// Handlers
 	mux := http.NewServeMux()
 	mux.Handle("/health", middleware.EnableCORS(&handlers.HealthHandler{}))
-	mux.Handle("/lol/profile", middleware.EnableCORS(handlers.NewLoLProfileHandler(pool)))
+	mux.Handle("/lol/profile", middleware.EnableCORS(lol.NewLoLProfileHandler(pool)))
 
 	// Starting server
 	port := os.Getenv("PORT")
