@@ -1,4 +1,4 @@
-import { getMastery } from "@/lib/server/lol";
+import { getMastery, getProfile } from "@/lib/server/lol";
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
@@ -16,6 +16,8 @@ export async function generateMetadata({ params }) {
 
 export default async function MasteryPage({ params }) {
   const resolvedParams = await params;
+
+  await getProfile(resolvedParams);
   const masteryData = await getMastery(resolvedParams);
 
   return (

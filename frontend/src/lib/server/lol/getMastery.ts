@@ -1,4 +1,3 @@
-// lib/server/lol/getMastery.ts
 import "server-only";
 import { redirect } from "next/navigation";
 import { regionTagToServerCode } from "@/lib/utils/stringUtils";

@@ -1,4 +1,3 @@
-// Server component
 import { getProfile } from "@/lib/server/lol";
 import { ProfileHeader } from "@/app/components/LeagueProfile";
 import ProfileNavbar from "@/app/components/LeagueProfile/ProfileNavbar";
