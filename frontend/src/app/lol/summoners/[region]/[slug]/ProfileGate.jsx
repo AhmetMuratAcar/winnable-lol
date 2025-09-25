@@ -2,6 +2,7 @@
 import { getProfile } from "@/lib/server/lol";
 import { ProfileHeader } from "@/app/components/LeagueProfile";
 import ProfileNavbar from "@/app/components/LeagueProfile/ProfileNavbar";
+import { ProfileDataProvider } from "./ProfileDataProvider";
 
 export default async function ProfileGate({ params, children }) {
   // This await suspends the rendering of all children so
