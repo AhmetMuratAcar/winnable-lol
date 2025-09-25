@@ -1,5 +1,7 @@
 "use client";
 export default function RefreshButton() {
+  // REMEMBER TO REVAILDATE THE TAGS OF ALL CACHED DATA IN PROFILE PAGE
+  // getProfile, getMastery atm
   return (
     <button
       onClick={() => console.log("Refreshing profile...")}
