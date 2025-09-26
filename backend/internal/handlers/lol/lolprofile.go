@@ -34,12 +34,13 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("----------------------------")
 	log.Println("Received LoL profile request")
-	req := types.RequestBody{
-		GameName: r.URL.Query().Get("gameName"),
-		TagLine:  r.URL.Query().Get("tagLine"),
-		Region:   r.URL.Query().Get("region"),
-	}
+
 	defer r.Body.Close()
+	req, ok := utils.ValidateLeagueProfileReq(w, r)
+	if !ok {
+		log.Print("Bad request, missing query params")
+		return
+	}
 
 	log.Printf(
 		"Received GameName: %s Tagline: %s Region: %s",
