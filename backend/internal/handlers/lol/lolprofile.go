@@ -26,18 +26,18 @@ func NewLoLProfileHandler(pool *pgxpool.Pool) *LoLProfileHandler {
 }
 
 func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", http.MethodPost)
-		http.Error(w, "405 Method Not Allowed: only POST is supported", http.StatusMethodNotAllowed)
+	if r.Method != http.MethodGet {
+		w.Header().Set("Allow", http.MethodGet)
+		http.Error(w, "405 Method Not Allowed: only GET is supported", http.StatusMethodNotAllowed)
 		return
 	}
 
 	log.Println("----------------------------")
 	log.Println("Received LoL profile request")
-	var req types.RequestBody
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid JSON request body", http.StatusBadRequest)
-		return
+	req := types.RequestBody{
+		GameName: r.URL.Query().Get("gameName"),
+		TagLine:  r.URL.Query().Get("tagLine"),
+		Region:   r.URL.Query().Get("region"),
 	}
 	defer r.Body.Close()
 

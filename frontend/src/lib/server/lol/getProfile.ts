@@ -20,11 +20,9 @@ export async function getProfile(params: Params) {
       const tagLine = decodeURIComponent(rawTagLine || "");
       const regionServerCode = regionTagToServerCode(region);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/lol/profile`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ region: regionServerCode, gameName, tagLine }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/lol/profile?region=${encodeURIComponent(regionServerCode)}&gameName=${encodeURIComponent(gameName)}&tagLine=${encodeURIComponent(tagLine)}`,
+      );
 
       if (res.status === 404) {
         redirect(`/summoner-not-found/${region}/${encodeURIComponent(slug)}`);
