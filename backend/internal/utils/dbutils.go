@@ -63,6 +63,35 @@ func SyncSummonerProfileData(
 /* ------------------------ SELECT Queries ------------------------ */
 
 // GetPUUID queries summoners table for given user's PUUID
+func GetPUUID(ctx context.Context, pool *pgxpool.Pool, userInfo types.RequestBody) (string, error) {
+	const query = `
+								SELECT puuid 
+								FROM summoners 
+								WHERE region = $1 
+									AND lower(game_name) = lower($2) 
+									AND lower(tag_line) = lower($3) 
+								LIMIT 1;
+							`
+	var puuid string
+	err := pool.QueryRow(
+		ctx,
+		query,
+		userInfo.Region, userInfo.GameName, userInfo.TagLine,
+	).Scan(
+		&puuid,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", fmt.Errorf("getPUUID query returned no results")
+		}
+
+		return "", fmt.Errorf("getPUUID query failed: %w", err)
+	}
+
+	return puuid, nil
+}
+
 func SummonerCacheCheck(ctx context.Context, pool *pgxpool.Pool, userInfo types.RequestBody) (types.PUUIDCacheCheck, error) {
 	var (
 		puuid       string
@@ -102,7 +131,7 @@ func SummonerCacheCheck(ctx context.Context, pool *pgxpool.Pool, userInfo types.
 			return types.PUUIDCacheCheck{Found: false}, nil
 		}
 
-		return types.PUUIDCacheCheck{Found: false}, fmt.Errorf("getPUUID query failed: %w", err)
+		return types.PUUIDCacheCheck{Found: false}, fmt.Errorf("SummonerCacheCheck query failed: %w", err)
 	}
 
 	stale := time.Since(updatedAt) > 24*time.Hour
