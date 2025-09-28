@@ -35,6 +35,18 @@ type LeagueMatch struct {
 	WinningTeam               int                      `json:"winningTeam"`
 }
 
+type LeagueMatchPreview struct {
+	EndOfGameResult           string                          `json:"endOfGameResult"`
+	GameDuration              int                             `json:"gameDuration"`
+	GameEndedInEarlySurrender bool                            `json:"gameEndedInEarlySurrender"`
+	GameStartTimestamp        int                             `json:"gameStartTimeStamp"`
+	MatchID                   string                          `json:"matchId"`
+	Participants              []LeagueMatchParticipantPreview `json:"participants"`
+	QueueId                   int                             `json:"queueId"`
+	UserPreview               UserMatchPreview                `json:"usserPreview"`
+	WinningTeam               int                             `json:"winningTeam"`
+}
+
 type LeagueMatchParticipant struct {
 	Assists                     int           `json:"assists"`
 	ChampionID                  int           `json:"championId"`
@@ -57,6 +69,26 @@ type LeagueMatchParticipant struct {
 	TotalDamageDealtToChampions int           `json:"totalDamageDealtToChampions"`
 	TotalMinionsKilled          int           `json:"totalMinionsKilled"`
 	VisionScore                 int           `json:"visionScore"`
+}
+
+type UserMatchPreview struct {
+	Assists            int           `json:"assists"`
+	ChampionID         int           `json:"championId"`
+	ChampLevel         int           `json:"champLevel"`
+	Deaths             int           `json:"deaths"`
+	Items              []int         `json:"items"`
+	Kills              int           `json:"kills"`
+	Runes              SummonerRunes `json:"runes"`
+	Summoner1ID        int           `json:"summoner1Id"`
+	Summoner2ID        int           `json:"summoner2Id"`
+	Team               int           `json:"team"`
+	TotalMinionsKilled int           `json:"totalMinionsKilled"`
+}
+
+type LeagueMatchParticipantPreview struct {
+	ChampionID     int    `json:"championId"`
+	RiotIDGameName string `json:"riotIdGameName"`
+	RiotIDTagline  string `json:"riotIdTagline"`
 }
 
 type SummonerRunes struct {
@@ -129,19 +161,20 @@ type GamesSummary struct {
 }
 
 type LeagueProfilePage struct {
-	PUUID         string           `json:"PUUID"`
-	ProfileIconID int              `json:"profileIconId"`
-	GameName      string           `json:"gameName"`
-	TagLine       string           `json:"tagLine"`
-	Region        string           `json:"region"`
-	Level         int              `json:"summonerLevel"`
-	LastUpdated   time.Time        `json:"lastUpdated"`
-	Ranks         []LeagueRank     `json:"ranks"`
-	MasteryData   MasteryData      `json:"masteryData"`
-	MatchData     []LeagueMatch    `json:"matchData"`
-	PlayedWith    []PlayedSummoner `json:"recentlyPlayedWith"`
-	PlayedAgainst []PlayedSummoner `json:"recentlyPlayedAgainst"`
-	RecentGames   GamesSummary     `json:"recentGames"`
+	PUUID         string               `json:"PUUID"`
+	ProfileIconID int                  `json:"profileIconId"`
+	GameName      string               `json:"gameName"`
+	TagLine       string               `json:"tagLine"`
+	Region        string               `json:"region"`
+	Level         int                  `json:"summonerLevel"`
+	LastUpdated   time.Time            `json:"lastUpdated"`
+	Ranks         []LeagueRank         `json:"ranks"`
+	MasteryData   MasteryData          `json:"masteryData"`
+	MatchData     []LeagueMatch        `json:"matchData"`
+	MatchPreviews []LeagueMatchPreview `json:"matchPreviews"`
+	PlayedWith    []PlayedSummoner     `json:"recentlyPlayedWith"`
+	PlayedAgainst []PlayedSummoner     `json:"recentlyPlayedAgainst"`
+	RecentGames   GamesSummary         `json:"recentGames"`
 }
 
 // Removed the challenges and PlayerScore data from the RawMatchResponse struct because the
