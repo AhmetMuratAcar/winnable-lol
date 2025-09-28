@@ -123,6 +123,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Print("PUUID fetch successful")
 
 	// Mastery Calls
+	// Calling and adding to DB here but not part of return
 	if !cacheCheck.Found || !cacheCheck.IsPopulated || cacheCheck.Stale {
 		championMasteries, err := client.GetSummonerMastery(req.Region, userProfile.PUUID)
 		if err != nil {
@@ -142,8 +143,6 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		userProfile.MasteryData.ChampionsPlayed = len(championMasteries)
 		userProfile.MasteryData.ChampionMasteries = championMasteries
 	}
-
-	// TODO: mastery graph data generation
 
 	// Rank Calls
 	if !cacheCheck.Found || !cacheCheck.IsPopulated || cacheCheck.Stale {

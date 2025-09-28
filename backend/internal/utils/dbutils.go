@@ -827,7 +827,7 @@ func AddNewSummoners(ctx context.Context, pool *pgxpool.Pool, rows []types.Summo
 
 /* ------------------------ UPDATE Queries ------------------------ */
 
-// UpdateSummonersAll updates all contents of a summoners' table row for each row given in rows
+// UpdateSummonersAll updates all contewnts of a summoners' table row for each row given in rows
 func UpdateSummonersAll(ctx context.Context, pool *pgxpool.Pool, rows []types.SummonerRow) error {
 	if len(rows) == 0 {
 		return nil

@@ -169,7 +169,7 @@ type LeagueProfilePage struct {
 	Level         int                  `json:"summonerLevel"`
 	LastUpdated   time.Time            `json:"lastUpdated"`
 	Ranks         []LeagueRank         `json:"ranks"`
-	MasteryData   MasteryData          `json:"masteryData"`
+	MasteryData   MasteryData          `json:"-"`
 	MatchData     []LeagueMatch        `json:"matchData"`
 	MatchPreviews []LeagueMatchPreview `json:"matchPreviews"`
 	PlayedWith    []PlayedSummoner     `json:"recentlyPlayedWith"`
