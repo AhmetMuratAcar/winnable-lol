@@ -1,4 +1,4 @@
-package utils
+package lolprofilesvc
 
 import (
 	"winnable/internal/types"

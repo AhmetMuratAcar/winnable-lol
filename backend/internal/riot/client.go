@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"winnable/internal/lolprofilesvc"
 	"winnable/internal/types"
-	"winnable/internal/utils"
 )
 
 type RiotClient struct {
@@ -196,7 +196,7 @@ func (c *RiotClient) GetMatchData(matchID string) (types.LeagueMatch, error) {
 		return types.LeagueMatch{}, fmt.Errorf("error decoding JSON: %w", err)
 	}
 
-	result := utils.ToLeagueMatch(rawMatchData)
+	result := lolprofilesvc.ToLeagueMatch(rawMatchData)
 	return result, nil
 }
 
