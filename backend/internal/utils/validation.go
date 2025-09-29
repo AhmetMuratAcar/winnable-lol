@@ -11,6 +11,8 @@ type ErrorResponse struct {
 	MissingParams []string `json:"missingParams,omitempty"`
 }
 
+// ValidateLeagueProfileReq ensures the correct query params are present for
+// /lol/... profile, mastery, and live endpoints
 func ValidateLeagueProfileReq(w http.ResponseWriter, r *http.Request) (types.RequestBody, bool) {
 	req := types.RequestBody{
 		GameName: r.URL.Query().Get("gameName"),

@@ -755,9 +755,7 @@ func AddMasteries(ctx context.Context, pool *pgxpool.Pool, puuid string, masteri
 	return nil
 }
 
-// AddNewSummoners inserts new PUUIDs into the summoners table
-//
-// Only the PUUID, CreatedAt(now), UpdatedAt(now), and IsPopulated(false) columns are populated
+// AddNewSummoners inserts new users into the summoners table
 func AddNewSummoners(ctx context.Context, pool *pgxpool.Pool, rows []types.SummonerRow) error {
 	if len(rows) == 0 {
 		return nil

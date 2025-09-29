@@ -265,8 +265,12 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		profile types.LeagueProfilePage,
 		newMatches []types.LeagueMatch,
 	) {
+		log.Print("---START POST-PROCESSING---")
 		ctx, cancel := context.WithTimeout(context.WithoutCancel(parent), 30*time.Second)
 		defer cancel()
+
+		start := time.Now()
+		var err error
 
 		// mastery calls
 		if !check.Found || !check.IsPopulated || check.Stale {
@@ -291,6 +295,8 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// update/add current user's data
 		if err := utils.SyncSummonerProfileData(ctx, pool, check, profile); err != nil {
 			log.Printf("SyncProfileData error: %v", err)
+		} else {
+			log.Print("Profile data synced")
 		}
 
 		// add all new PUUIDs found for matches to summoners
@@ -322,17 +328,20 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 			// Early returning here because matches and match_participants tables rely on
 			// PUUIDs in the summoners table as foreign keys for their entries.
+		} else {
+			log.Print("New summoners added")
 		}
 
 		// update matches tables
 		if len(newMatches) > 0 {
 			if err := utils.AddMatchData(ctx, pool, newMatches); err != nil {
 				log.Printf("AddMatchData error: %v", err)
+			} else {
+				log.Printf("DB successfully updated (matches added: %d)", len(newMatches))
 			}
-		} else {
-			log.Print("DB successfully updated")
 		}
 
+		log.Printf("Post-processing completed in %s", time.Since(start))
 	}(ctx, pool, checkCopy, profileCopy, toAddCopy)
 
 	w.Header().Set("Content-Type", "application/json")
