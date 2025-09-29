@@ -14,8 +14,9 @@ func ConstructGamesSummary(matches []types.LeagueMatch, PUUID string) (types.Gam
 	}
 
 	summary := types.GamesSummary{
-		TotalsByRole:  make(map[string]types.RoleSummary),
-		TotalsByQueue: make(map[int]types.RoleSummary),
+		TotalsByRole:   make(map[string]types.RoleSummary),
+		TotalsByQueue:  make(map[int]types.RoleSummary),
+		MatchSummaries: []types.LeagueMatchSummary{},
 	}
 	roleTotals := make(map[string]types.RoleSummary)
 	queueTotals := make(map[int]types.RoleSummary)
