@@ -122,28 +122,6 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Print("PUUID fetch successful")
 
-	// Mastery Calls
-	// Calling and adding to DB here but not part of return
-	if !cacheCheck.Found || !cacheCheck.IsPopulated || cacheCheck.Stale {
-		championMasteries, err := client.GetSummonerMastery(req.Region, userProfile.PUUID)
-		if err != nil {
-			log.Printf(
-				"Error requesting masteries:\nPUUID:%s\nError: %v",
-				userProfile.PUUID,
-				err,
-			)
-		} else {
-			log.Print("Mastery fetch successful")
-		}
-
-		for _, c := range championMasteries {
-			userProfile.MasteryData.TotalMastery += c.ChampionLevel
-			userProfile.MasteryData.TotalMasteryPoints += c.ChampionPoints
-		}
-		userProfile.MasteryData.ChampionsPlayed = len(championMasteries)
-		userProfile.MasteryData.ChampionMasteries = championMasteries
-	}
-
 	// Rank Calls
 	if !cacheCheck.Found || !cacheCheck.IsPopulated || cacheCheck.Stale {
 		userProfile.Ranks, err = client.GetSummonerRanks(userProfile.PUUID, userProfile.Region)
@@ -289,6 +267,26 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	) {
 		ctx, cancel := context.WithTimeout(context.WithoutCancel(parent), 30*time.Second)
 		defer cancel()
+
+		// mastery calls
+		if !check.Found || !check.IsPopulated || check.Stale {
+			safeClient := riot.NewClient()
+			profile.MasteryData.ChampionMasteries, err = safeClient.GetSummonerMastery(
+				profile.Region,
+				profile.PUUID,
+			)
+			if err != nil {
+				log.Printf("Error calling GetSummonerMastery in /lol/profile: %v", err)
+			} else {
+				log.Print("Masteries successfully fetched from Riot")
+			}
+
+			for _, c := range profile.MasteryData.ChampionMasteries {
+				profile.MasteryData.TotalMastery += c.ChampionPoints
+				profile.MasteryData.TotalMasteryPoints += c.ChampionPoints
+			}
+			profile.MasteryData.ChampionsPlayed = len(profile.MasteryData.ChampionMasteries)
+		}
 
 		// update/add current user's data
 		if err := utils.SyncSummonerProfileData(ctx, pool, check, profile); err != nil {
