@@ -177,6 +177,38 @@ type LeagueProfilePage struct {
 	RecentGames   GamesSummary         `json:"recentGames"`
 }
 
+type LiveLeagueGame struct {
+	MatchID      string                      `json:"matchID"`
+	QueueID      int                         `json:"queueID"`
+	PlatformID   string                      `json:"-"`
+	GameLength   int                         `json:"gameLength"`
+	Participants []LiveLeagueGameParticipant `json:"participants"`
+	Bans         []LiveLeagueGameBan         `json:"bans"`
+}
+
+type LiveLeagueGameParticipant struct {
+	PUUID         string      `json:"PUUID"`
+	TeamID        int         `json:"teamID"`
+	Summoner1ID   int         `json:"summoner1ID"`
+	Summoner2ID   int         `json:"summoner2ID"`
+	ChampionID    int         `json:"championID"`
+	ProfileIconID int         `json:"profileIconID"`
+	GameName      string      `json:"gameName"`
+	TagLine       string      `json:"tagLine"`
+	Runes         RunePreview `json:"runes"`
+}
+
+type LiveLeagueGameBan struct {
+	ChampionID int `json:"championID"`
+	TeamID     int `json:"teamID"`
+	PickTurn   int `json:"pickTurn"`
+}
+
+type RunePreview struct {
+	MainTreeID int `json:"mainTreeID"`
+	SubTreeID  int `json:"subTreeID"`
+}
+
 // Removed the challenges and PlayerScore data from the RawMatchResponse struct because the
 // Riot docs straight up lie and define some fields as int when they can sometimes
 // be sent over as a float. Don't need it, just nuked it all to avoid the headache.
