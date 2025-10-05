@@ -178,12 +178,12 @@ type LeagueProfilePage struct {
 }
 
 type LiveLeagueGame struct {
-	MatchID      string                      `json:"matchID"`
-	QueueID      int                         `json:"queueID"`
-	PlatformID   string                      `json:"-"`
-	GameLength   int                         `json:"gameLength"`
-	Participants []LiveLeagueGameParticipant `json:"participants"`
-	Bans         []LiveLeagueGameBan         `json:"bans"`
+	MatchID       string                      `json:"matchID"`
+	QueueID       int                         `json:"queueID"`
+	GameLength    int                         `json:"gameLength"`
+	GameStartTime int                         `json:"gameStartTime"`
+	Participants  []LiveLeagueGameParticipant `json:"participants"`
+	Bans          []LiveLeagueGameBan         `json:"bans"`
 }
 
 type LiveLeagueGameParticipant struct {
@@ -205,7 +205,7 @@ type LiveLeagueGameBan struct {
 }
 
 type RunePreview struct {
-	MainTreeID int `json:"mainTreeID"`
+	MainRuneID int `json:"mainRuneID"`
 	SubTreeID  int `json:"subTreeID"`
 }
 
@@ -435,4 +435,39 @@ type RawMatchResponse struct {
 		} `json:"teams"`
 		TournamentCode string `json:"tournamentCode"`
 	} `json:"info"`
+}
+
+type RawLiveResponse struct {
+	GameID            int64  `json:"gameId"`
+	MapID             int    `json:"mapId"`
+	GameMode          string `json:"gameMode"`
+	GameType          string `json:"gameType"`
+	GameQueueConfigID int    `json:"gameQueueConfigId"`
+	Participants      []struct {
+		Puuid                    string        `json:"puuid"`
+		TeamID                   int           `json:"teamId"`
+		Spell1ID                 int           `json:"spell1Id"`
+		Spell2ID                 int           `json:"spell2Id"`
+		ChampionID               int           `json:"championId"`
+		ProfileIconID            int           `json:"profileIconId"`
+		RiotID                   string        `json:"riotId"`
+		Bot                      bool          `json:"bot"`
+		GameCustomizationObjects []interface{} `json:"gameCustomizationObjects"`
+		Perks                    struct {
+			PerkIds      []int `json:"perkIds"`
+			PerkStyle    int   `json:"perkStyle"`
+			PerkSubStyle int   `json:"perkSubStyle"`
+		} `json:"perks"`
+	} `json:"participants"`
+	Observers struct {
+		EncryptionKey string `json:"encryptionKey"`
+	} `json:"observers"`
+	PlatformID      string `json:"platformId"`
+	BannedChampions []struct {
+		ChampionID int `json:"championId"`
+		TeamID     int `json:"teamId"`
+		PickTurn   int `json:"pickTurn"`
+	} `json:"bannedChampions"`
+	GameStartTime int `json:"gameStartTime"`
+	GameLength    int   `json:"gameLength"`
 }

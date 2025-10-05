@@ -284,3 +284,47 @@ func (c *RiotClient) GetSummonerRanks(puuid, region string) ([]types.LeagueRank,
 
 	return result, nil
 }
+
+func (c *RiotClient) GetLiveGame(puuid, region string) (types.LiveLeagueGame, error) {
+	region = strings.ToLower(region)
+	endpoint := fmt.Sprintf(
+		"https://%s.%s/lol/spectator/v5/active-games/by-summoner/%s",
+		region,
+		c.baseURL,
+		puuid,
+	)
+
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return types.LiveLeagueGame{}, fmt.Errorf("error creating GetLiveGame request: %w", err)
+	}
+	req.Header.Set("X-Riot-Token", c.apiKey)
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return types.LiveLeagueGame{}, fmt.Errorf("GetLiveGame API request failed: %w", err)
+	}
+
+	if res.StatusCode == http.StatusNotFound {
+		return types.LiveLeagueGame{}, &types.RiotAPIError{
+			StatusCode: res.StatusCode,
+			Message:    "summoner not in a live game",
+		}
+	}
+
+	if res.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(res.Body)
+		return types.LiveLeagueGame{}, &types.RiotAPIError{
+			StatusCode: res.StatusCode,
+			Message:    string(body),
+		}
+	}
+
+	var rawResponse types.RawLiveResponse
+	if err := json.NewDecoder(res.Body).Decode(&rawResponse); err != nil {
+		return types.LiveLeagueGame{}, fmt.Errorf("error decoding GetLiveGame API response: %w", err)
+	}
+
+	liveGame := lolprofilesvc.ToLiveLeagueGame(rawResponse)
+	return liveGame, nil
+}
