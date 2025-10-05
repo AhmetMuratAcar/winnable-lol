@@ -46,6 +46,7 @@ export default function RoleBarGraph({ roles }) {
         />
         <Tooltip
           cursor={false}
+          offset={20}
           contentStyle={{
             background: "var(--contrast)",
             borderRadius: 8,
