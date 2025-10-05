@@ -44,3 +44,21 @@ func WriteMasteryToFile(data types.MasteryData, riotID string) error {
 	log.Printf("wrote %s mastery to %s", riotID, path)
 	return nil
 }
+
+func WriteLiveGameToFile(data types.LiveLeagueGame, riotID string) error {
+	path := fmt.Sprintf("./devfiles/live/%s_LiveGame.JSON", riotID)
+	f, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("failed to create live game file: %w", err)
+	}
+	defer f.Close()
+
+	enc := json.NewEncoder(f)
+	enc.SetIndent("", "  ")
+	if err := enc.Encode(data); err != nil {
+		return fmt.Errorf("failed to write live game JSON: %w", err)
+	}
+
+	log.Printf("wrote %s live game to %s", riotID, path)
+	return nil
+}
