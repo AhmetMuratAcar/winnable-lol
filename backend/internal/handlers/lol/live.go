@@ -59,6 +59,7 @@ func (h *LolLiveHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	client := riot.NewClient()
 	if !cacheCheck.Found {
+		log.Print("User not in summoners, fetching PUUID from Riot")
 		userAccount, err := client.GetSummonerPUUID(req)
 		if err != nil {
 			log.Printf("Error calling GetSummonerPUUID in /lol/live: %v", err)
@@ -86,7 +87,7 @@ func (h *LolLiveHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				http.StatusNotFound,
 			)
 		} else {
-			log.Printf("Riot API eror: %v", err)
+			log.Printf("Riot API error: %v", err)
 			http.Error(
 				w,
 				"internal server error",
