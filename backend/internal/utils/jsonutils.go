@@ -62,3 +62,21 @@ func WriteLiveGameToFile(data types.LiveLeagueGame, riotID string) error {
 	log.Printf("wrote %s live game to %s", riotID, path)
 	return nil
 }
+
+func WriteRefreshToFile(data types.LeagueProfilePage, riotID string) error {
+	path := fmt.Sprintf("./devfiles/refresh/%s_Refresh.JSON", riotID)
+	f, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("failed to create refresh file: %w", err)
+	}
+	defer f.Close()
+
+	enc := json.NewEncoder(f)
+	enc.SetIndent("", "  ")
+	if err := enc.Encode(data); err != nil {
+		return fmt.Errorf("failed to write refresh JSON: %w", err)
+	}
+
+	log.Printf("wrote %s refresh data to %s", riotID, path)
+	return nil
+}

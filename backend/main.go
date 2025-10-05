@@ -65,6 +65,7 @@ func run() error {
 	mux.Handle("/lol/profile", middleware.EnableCORS(lol.NewLoLProfileHandler(pool)))
 	mux.Handle("/lol/mastery", middleware.EnableCORS(lol.NewLolMasteryHandler(pool)))
 	mux.Handle("/lol/live", middleware.EnableCORS(lol.NewLolLiveHandler(pool)))
+	mux.Handle("/lol/refresh", middleware.EnableCORS(lol.NewLoLRefreshHandler(pool)))
 
 	// Starting server
 	port := os.Getenv("PORT")
