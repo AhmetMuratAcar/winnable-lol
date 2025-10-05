@@ -88,7 +88,7 @@ func (h *LolMasteryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Writing to file for dev
 	if os.Getenv("ENV") == "development" {
-		riotID := cacheCheck.GameName + "#" + cacheCheck.TagLine
+		riotID := req.GameName + "#" + req.TagLine
 		err := utils.WriteMasteryToFile(out, riotID)
 		if err != nil {
 			log.Printf("Failed to write mastery to JSON: %v", err)
