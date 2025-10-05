@@ -9,6 +9,7 @@ type Params = { region: string; slug: string };
 export async function getProfile(params: Params) {
   const { region, slug } = params;
 
+  // TODO: this endpoint is now a GET on the server, update to use next caching instead of unstable
   const cached = unstable_cache(
     async () => {
       if (typeof slug !== "string" || !slug.includes("-")) {
@@ -20,12 +21,15 @@ export async function getProfile(params: Params) {
       const tagLine = decodeURIComponent(rawTagLine || "");
       const regionServerCode = regionTagToServerCode(region);
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/lol/profile?region=${encodeURIComponent(regionServerCode)}&gameName=${encodeURIComponent(gameName)}&tagLine=${encodeURIComponent(tagLine)}`,
-      );
+      const url = new URL(`${process.env.NEXT_PUBLIC_BACKEND_URL}/lol/profile`);
+      url.searchParams.set("region", regionServerCode);
+      url.searchParams.set("gameName", gameName);
+      url.searchParams.set("tagLine", tagLine);
+
+      const res = await fetch(url);
 
       if (res.status === 404) {
-        redirect(`/summoner-not-found/${region}/${encodeURIComponent(slug)}`);
+        redirect(`/summoner-not-found/${region}/${gameName}-${tagLine}`);
       }
       if (!res.ok) {
         redirect(`/server-error?status=${res.status}`);

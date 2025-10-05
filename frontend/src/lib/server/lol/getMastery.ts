@@ -30,7 +30,7 @@ export async function getMastery(params: Params): Promise<unknown> {
   });
 
   if (res.status === 404) {
-    redirect(`/summoner-not-found/${region}/${encodeURIComponent(slug)}`);
+    redirect(`/summoner-not-found/${region}/${gameName}-${tagLine}`);
   }
   if (!res.ok) {
     redirect(`/server-error?status=${res.status}`);
