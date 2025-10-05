@@ -3,10 +3,12 @@ package lol
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"os"
 	"time"
+	"winnable/internal/riot"
 	"winnable/internal/types"
 	"winnable/internal/utils"
 
@@ -48,36 +50,64 @@ func (h *LolMasteryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
 	defer cancel()
 
-	// User's puuid and mastery data should always be in the DB table due to
-	// structuring of frontend logic and /lol/profile but checks in place just
-	// in case.
-	var out types.MasteryData
 	cacheCheck, err := utils.SummonerCacheCheck(ctx, h.pool, req)
 	if err != nil {
 		log.Printf("Error calling SummonerCacheCheck in /lol/mastery: %v", err)
-		http.Error(
-			w,
-			"internal server error",
-			http.StatusInternalServerError,
-		)
-		return
 	}
+	var userPUUID string
 
+	client := riot.NewClient()
 	if !cacheCheck.Found {
-		log.Print("User not in summoners table for /lol/mastery")
-		http.Error(
-			w,
-			"user not found",
-			http.StatusNotFound,
-		)
-		return
+		log.Print("User not in summoners, fetching PUUID and mastery data from Riot")
+		userAccount, err := client.GetSummonerPUUID(req)
+		if err != nil {
+			// TODO: Update this logic to be like the block below is the As logic. Have to Update
+			// GetSummonerPUUID first.
+			log.Printf("Error calling GetSummonerPUUID in /lol/mastery: %v", err)
+			http.Error(
+				w,
+				"internal server error",
+				http.StatusInternalServerError,
+			)
+			return
+		}
+		userPUUID = userAccount.Puuid
+	} else {
+		userPUUID = cacheCheck.PUUID
 	}
 
 	// Don't care if the data is stale for mastery
-	out.ChampionMasteries, err = utils.GetMasteries(ctx, h.pool, cacheCheck.PUUID)
-	if err != nil {
-		log.Printf("Error calling GetMasteries in /lol/mastery: %v", err)
-		return
+	var out types.MasteryData
+	if cacheCheck.Found && cacheCheck.IsPopulated {
+		out.ChampionMasteries, err = utils.GetMasteries(ctx, h.pool, userPUUID)
+		if err != nil {
+			log.Printf("Error calling GetMasteries in /lol/mastery: %v", err)
+			cacheCheck.Found = false // to default below
+		}
+	}
+
+	if !cacheCheck.Found {
+		out.ChampionMasteries, err = client.GetSummonerMastery(req.Region, userPUUID)
+		if err != nil {
+			var RiotAPIEror *types.RiotAPIError
+			if errors.As(err, &RiotAPIEror) && RiotAPIEror.StatusCode == http.StatusNotFound {
+				log.Printf("%s", RiotAPIEror.Error())
+				http.Error(
+					w,
+					"summoner not found",
+					http.StatusNotFound,
+				)
+			} else {
+				log.Printf("Riot API error: %v", err)
+				http.Error(
+					w,
+					"internal server error",
+					http.StatusInternalServerError,
+				)
+			}
+
+			return
+		}
 	}
 
 	for _, c := range out.ChampionMasteries {
