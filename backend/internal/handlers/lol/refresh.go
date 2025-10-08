@@ -162,12 +162,101 @@ func (h *LolRefreshHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		riotID := userProfile.GameName + "#" + userProfile.TagLine
 		err := utils.WriteRefreshToFile(userProfile, riotID)
 		if err != nil {
-			log.Printf("Failed to write profile to JSON. Error: %v", err)
+			log.Printf("Failed to write profile refresh to JSON. Error: %v", err)
 		}
 	}
 
 	// Updating DB
-	// TODO: add separate Go routine for updating DB
+	pool := h.pool
+	checkCopy := cacheCheck
+	profileCopy := userProfile
+	toAddCopy := append([]types.LeagueMatch(nil), toAdd...)
+
+	go func(
+		parent context.Context,
+		pool *pgxpool.Pool,
+		check types.PUUIDCacheCheck,
+		profile types.LeagueProfilePage,
+		newMatches []types.LeagueMatch,
+	) {
+		log.Print("---START REFRESH POST-PROCESSING---")
+		ctx, cancel := context.WithTimeout(context.WithoutCancel(parent), 30*time.Second)
+		defer cancel()
+
+		start := time.Now()
+		var err error
+
+		// mastery calls
+		if !check.Found || !check.IsPopulated || check.Stale {
+			safeClient := riot.NewClient()
+			profile.MasteryData.ChampionMasteries, err = safeClient.GetSummonerMastery(
+				profile.Region,
+				profile.PUUID,
+			)
+			if err != nil {
+				log.Printf("Error calling GetSummonerMastery in /lol/refresh: %v", err)
+			} else {
+				log.Print("Masteries successfully fetched from Riot")
+			}
+
+			for _, c := range profile.MasteryData.ChampionMasteries {
+				profile.MasteryData.TotalMastery += c.ChampionPoints
+				profile.MasteryData.TotalMasteryPoints += c.ChampionPoints
+			}
+			profile.MasteryData.ChampionsPlayed = len(profile.MasteryData.ChampionMasteries)
+		}
+
+		// update/add current user's data
+		if err := utils.SyncSummonerProfileData(ctx, pool, check, profile); err != nil {
+			log.Printf("SyncProfileData error in /lol/refresh: %v", err)
+		} else {
+			log.Print("Profile data synced")
+		}
+
+		// add all new PUUIDs found for matches to summoners
+		idMap := make(map[string]bool)
+		newRows := make([]types.SummonerRow, 0, len(profile.MatchData)*9)
+		for _, m := range profile.MatchData {
+			for _, p := range m.Participants {
+				id := p.PUUID
+				if _, ok := idMap[id]; !ok && id != profile.PUUID {
+					row := types.SummonerRow{
+						PUUID:         id,
+						Region:        profile.Region,
+						GameName:      p.RiotIDGameName,
+						TagLine:       p.RiotIDTagline,
+						ProfileIconID: p.ProfileIconID,
+						SummonerLevel: p.SummonerLevel,
+						CreatedAt:     time.Now(),
+						UpdatedAt:     time.Now(),
+						IsPopulated:   false,
+					}
+					newRows = append(newRows, row)
+					idMap[id] = true
+				}
+			}
+		}
+
+		if err := utils.AddNewSummoners(ctx, pool, newRows); err != nil {
+			log.Printf("AddNewSummoners error in /lol/refresh: %v", err)
+			return
+			// Early returning here because matches and match_participants tables rely on
+			// PUUIDs in the summoners table as foreign keys for their entries.
+		} else {
+			log.Print("New summoners added")
+		}
+
+		// update matches tables
+		if len(newMatches) > 0 {
+			if err := utils.AddMatchData(ctx, pool, newMatches); err != nil {
+				log.Printf("AddMatchData error in /lol/refresh: %v", err)
+			} else {
+				log.Printf("DB successfully updated (matches added: %d)", len(newMatches))
+			}
+		}
+
+		log.Printf("Refresh post-processing completed in %s", time.Since(start))
+	}(ctx, pool, checkCopy, profileCopy, toAddCopy)
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(userProfile); err != nil {
