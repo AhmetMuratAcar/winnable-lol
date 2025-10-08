@@ -58,12 +58,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	cacheCheck, err := utils.SummonerCacheCheck(ctx, h.pool, req)
 	if err != nil {
-		log.Printf(
-			"Error querying DB for user's PUUID for GameName: %s Tagline: %s\nError: %v\n",
-			req.GameName,
-			req.TagLine,
-			err,
-		)
+		log.Printf("Error calling SummonerCacheCheck in /lol/profile")
 		// don't return and default back to riot API call for PUUID
 	}
 
@@ -83,10 +78,10 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			userProfile, err = lolprofilesvc.CachedProfileConstructor(ctx, h.pool, userProfile)
 			if err != nil {
 				// default back to Riot API calls
-				log.Printf("Error calling CachedProfileConstructor: %v", err)
+				log.Printf("Error calling CachedProfileConstructor in /lol/profile: %v", err)
 				err = utils.MarkSummonerStale(ctx, h.pool, userProfile.PUUID)
 				if err != nil {
-					log.Printf("Error marking summoner as stale: %v", err)
+					log.Printf("Error marking summoner as stale in /lol/profile: %v", err)
 				}
 
 				cacheCheck.IsPopulated = false
@@ -100,7 +95,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			var httpErr *types.HTTPError
 			if errors.As(err, &httpErr) {
-				log.Printf("GetSummonerPUUID HTTPError: status=%d err=%v", httpErr.StatusCode, err)
+				log.Printf("GetSummonerPUUID HTTPError in /lol/profile: status=%d err=%v", httpErr.StatusCode, err)
 				http.Error(
 					w,
 					"could not fetch summoner",
@@ -108,7 +103,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				)
 				return
 			} else {
-				log.Printf("GetSummonerPUUID internal error: %v", err)
+				log.Printf("GetSummonerPUUID internal error in /lol/profile: %v", err)
 				http.Error(w, "internal server error", http.StatusInternalServerError)
 			}
 		}
@@ -126,7 +121,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if !cacheCheck.Found || !cacheCheck.IsPopulated || cacheCheck.Stale {
 		userProfile.Ranks, err = client.GetSummonerRanks(userProfile.PUUID, userProfile.Region)
 		if err != nil {
-			log.Printf("error fetching summoner ranks. Error: %v", err)
+			log.Printf("Error calling GetSummonerRanks in /lol/profile. Error: %v", err)
 		} else {
 			log.Print("Summoner ranks successfully added")
 		}
@@ -141,14 +136,14 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if cacheCheck.Found && cacheCheck.IsPopulated && !cacheCheck.Stale {
 		matchIDs, err = utils.GetMatchIDs(ctx, h.pool, userProfile.PUUID)
 		if err != nil {
-			log.Printf("Error querying DB for past match IDs: %v", err)
+			log.Printf("Error calling GetMatchIDs in /lol/profile: %v", err)
 		}
 	}
 
 	if len(matchIDs) < 20 {
 		matchIDs, err = client.GetSummonerMatchIDs(userProfile.PUUID, startIndex, matchCount)
 		if err != nil {
-			log.Printf("Error requesting past match IDs from Riot: %v", err)
+			log.Printf("Error calling GetSUmmonerMatchIDs in /lol/profile: %v", err)
 		}
 	}
 	log.Print("MatchIDs fetch successful")
@@ -156,7 +151,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	matchDataMap, err := lolprofilesvc.ConstructMatchDataMap(ctx, h.pool, matchIDs)
 	if err != nil {
 		log.Printf(
-			"Error constructing matchDataMap PUUID: %s\nmatchIDs: %s\nerr: %v",
+			"Error constructing matchDataMap in /lol/profile PUUID: %s\nmatchIDs: %s\nerr: %v",
 			userProfile.PUUID,
 			matchIDs,
 			err,
@@ -176,7 +171,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		matchData, err := client.GetMatchData(id)
 		if err != nil {
 			log.Printf(
-				"Error fetching matchID %s\nError: %v",
+				"Error fetching matchID in /lol/profile %s\nError: %v",
 				id,
 				err,
 			)
@@ -222,7 +217,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		)
 
 		if err != nil {
-			log.Printf("error fetching summoner icon and level. Error: %v", err)
+			log.Printf("Eror calling GetSummonerIconAndLevel in /lol/profile. Error: %v", err)
 		} else {
 			log.Print("Summoner icon and level successfully addded")
 		}
@@ -231,14 +226,14 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Summary components' data
 	userProfile.PlayedWith, userProfile.PlayedAgainst, err = lolprofilesvc.ConstructRecentlyPlayedWithAndAgainst(userProfile.MatchData, userProfile.PUUID)
 	if err != nil {
-		log.Printf("error constructing recently played with: %v", err)
+		log.Printf("Error calling ConstructRecentlyPlayedWithAndAgainst in /lol/profile: %v", err)
 	} else {
 		log.Print("recently played with constructed")
 	}
 
 	userProfile.RecentGames, err = lolprofilesvc.ConstructGamesSummary(userProfile.MatchData, userProfile.PUUID)
 	if err != nil {
-		log.Printf("error constructing games summary: %v", err)
+		log.Printf("Error calling ConstructGamesSummary in /lol/profile: %v", err)
 	} else {
 		log.Print("games summary constructed")
 	}
@@ -265,7 +260,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		profile types.LeagueProfilePage,
 		newMatches []types.LeagueMatch,
 	) {
-		log.Print("---START POST-PROCESSING---")
+		log.Print("---START PROFILE POST-PROCESSING---")
 		ctx, cancel := context.WithTimeout(context.WithoutCancel(parent), 30*time.Second)
 		defer cancel()
 
@@ -294,7 +289,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		// update/add current user's data
 		if err := utils.SyncSummonerProfileData(ctx, pool, check, profile); err != nil {
-			log.Printf("SyncProfileData error: %v", err)
+			log.Printf("SyncProfileData error in /lol/profile: %v", err)
 		} else {
 			log.Print("Profile data synced")
 		}
@@ -324,7 +319,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err := utils.AddNewSummoners(ctx, pool, newRows); err != nil {
-			log.Printf("AddNewSummoners error: %v", err)
+			log.Printf("AddNewSummoners error in /lol/profile: %v", err)
 			return
 			// Early returning here because matches and match_participants tables rely on
 			// PUUIDs in the summoners table as foreign keys for their entries.
@@ -335,18 +330,18 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// update matches tables
 		if len(newMatches) > 0 {
 			if err := utils.AddMatchData(ctx, pool, newMatches); err != nil {
-				log.Printf("AddMatchData error: %v", err)
+				log.Printf("AddMatchData error in /lol/profile: %v", err)
 			} else {
 				log.Printf("DB successfully updated (matches added: %d)", len(newMatches))
 			}
 		}
 
-		log.Printf("Post-processing completed in %s", time.Since(start))
+		log.Printf("Profile post-processing completed in %s", time.Since(start))
 	}(ctx, pool, checkCopy, profileCopy, toAddCopy)
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(userProfile); err != nil {
-		log.Printf("failed to encode user's profile data: %v", err)
+		log.Printf("failed to encode user's profile data in /lol/profile: %v", err)
 		http.Error(
 			w,
 			"internal server error",
