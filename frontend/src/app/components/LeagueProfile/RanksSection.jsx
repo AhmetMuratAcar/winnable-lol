@@ -28,7 +28,9 @@ export default function RanksSection({ rankData = [] }) {
                 <div className="leading-tight">
                   <p className="text-l font-extrabold">
                     {rank.tier.charAt(0) + rank.tier.slice(1).toLowerCase()}{" "}
-                    {rankNumeralToNum(rank.rank)}
+                    {rank.tier !== "CHALLENGER" && rank.tier !== "GRANDMASTER"
+                      ? rankNumeralToNum(rank.rank)
+                      : ""}
                   </p>
                   <p className="text-gray-400 text-sm">{rank.leaguePoints} LP</p>
                 </div>
