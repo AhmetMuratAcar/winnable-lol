@@ -102,16 +102,16 @@ export function regionTagToServerCode(regionTag) {
 
 export function idValidation({ region, riotID }) {
   const regionTag = REGION_TAGLINE_MAP[region] || null;
-  if (typeof riotID !== "string" || !regionTag) {
-    return result;
-  }
-
   const result = {
     gameName: null,
     tagLine: null,
     region: regionTag,
     isValid: false,
   };
+
+  if (typeof riotID !== "string" || !regionTag) {
+    return result;
+  }
 
   const parts = riotID.trim().split("#");
   if (parts.length > 2) {
@@ -126,7 +126,7 @@ export function idValidation({ region, riotID }) {
 
   // Validation rules
   const nameRe = /^[\p{L}0-9 _\.]{3,16}$/u;
-  const tagRe = /^[\p{L}0-9]{2,5}$/u;
+  const tagRe = /^[\p{L}0-9\s]{2,5}$/u;
 
   if (nameRe.test(namePart) && tagRe.test(tagPart)) {
     result.isValid = true;
@@ -138,11 +138,11 @@ export function idValidation({ region, riotID }) {
 
 export function rankNumeralToNum(numeral) {
   const numerals = {
-    "I": 1,
-    "II": 2,
-    "III": 3,
-    "IV": 4
-  }
+    I: 1,
+    II: 2,
+    III: 3,
+    IV: 4,
+  };
 
-  return numerals[numeral]
+  return numerals[numeral];
 }
