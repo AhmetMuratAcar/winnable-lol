@@ -91,7 +91,7 @@ func (h *LolRefreshHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	startIndex := 0
 	matchCount := 20
-	matchIDs, err := client.GetSummonerMatchIDs(userProfile.PUUID, startIndex, matchCount)
+	matchIDs, err := client.GetSummonerMatchIDs(userProfile.PUUID, userProfile.Region, startIndex, matchCount)
 	if err != nil {
 		log.Printf("Error requesting matchIDs from Riot in /lol/refresh: %v", err)
 	} else {
@@ -112,7 +112,7 @@ func (h *LolRefreshHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	toAdd := make([]types.LeagueMatch, 0, len(missing))
 	for _, id := range missing {
-		matchData, err := client.GetMatchData(id)
+		matchData, err := client.GetMatchData(id, userProfile.Region)
 		if err != nil {
 			log.Printf(
 				"Error fetching matchID %s in /lol/refresh: %v",

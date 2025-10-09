@@ -37,11 +37,11 @@ func NewClientWithHTTPClient(httpClient *http.Client) *RiotClient {
 }
 
 func (c *RiotClient) GetSummonerPUUID(reqBody types.RequestBody) (types.AccountResponse, error) {
-	// TODO: actually route to nearest server instead of defaulting all to americas
-	baseEndpoint := "https://americas." + c.baseURL + "/riot/account/v1/accounts/by-riot-id"
+	route := GetPuuidRegionRoute(reqBody.Region)
 	endpoint := fmt.Sprintf(
-		"%s/%s/%s",
-		baseEndpoint,
+		"https://%s.%s/riot/account/v1/accounts/by-riot-id/%s/%s",
+		route,
+		c.baseURL,
 		url.PathEscape(reqBody.GameName),
 		url.PathEscape(reqBody.TagLine),
 	)
@@ -119,13 +119,16 @@ func (c *RiotClient) GetSummonerMastery(region, puuid string) ([]types.ChampionM
 	return championMasteries, nil
 }
 
-func (c *RiotClient) GetSummonerMatchIDs(puuid string, start int, count int) ([]string, error) {
-	// TODO: actually route to nearest server instead of defaulting all to americas
-	baseEndpoint := "https://americas." + c.baseURL + "/lol/match/v5/matches/by-puuid"
+func (c *RiotClient) GetSummonerMatchIDs(puuid, region string, start int, count int) ([]string, error) {
+	route, err := GetMatchDataRegionRoute(region)
+	if err != nil {
+		return nil, fmt.Errorf("provided region for GetSummonerMatchIDs does not exist: %w", err)
+	}
 	startStr := fmt.Sprintf("%d", start)
 	endpoint := fmt.Sprintf(
-		"%s/%s/ids?start=%s&count=%s",
-		baseEndpoint,
+		"https://%s.%s/lol/match/v5/matches/by-puuid/%s/ids?start=%s&count=%s",
+		route,
+		c.baseURL,
 		puuid,
 		startStr,
 		strconv.Itoa(count),
@@ -163,9 +166,17 @@ func (c *RiotClient) GetSummonerMatchIDs(puuid string, start int, count int) ([]
 	return result, nil
 }
 
-func (c *RiotClient) GetMatchData(matchID string) (types.LeagueMatch, error) {
-	baseEndpoint := "https://americas." + c.baseURL + "/lol/match/v5/matches"
-	endpoint := fmt.Sprintf("%s/%s", baseEndpoint, matchID)
+func (c *RiotClient) GetMatchData(matchID, region string) (types.LeagueMatch, error) {
+	route, err := GetMatchDataRegionRoute(region)
+	if err != nil {
+		return types.LeagueMatch{}, fmt.Errorf("provided region for GetMatchData does not exist: %w", err)
+	}
+	endpoint := fmt.Sprintf(
+		"https://%s.%s/lol/match/v5/matches/%s",
+		route,
+		c.baseURL,
+		matchID,
+	)
 
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {

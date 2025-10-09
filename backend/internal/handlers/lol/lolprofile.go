@@ -141,7 +141,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(matchIDs) < 20 {
-		matchIDs, err = client.GetSummonerMatchIDs(userProfile.PUUID, startIndex, matchCount)
+		matchIDs, err = client.GetSummonerMatchIDs(userProfile.PUUID, userProfile.Region, startIndex, matchCount)
 		if err != nil {
 			log.Printf("Error calling GetSUmmonerMatchIDs in /lol/profile: %v", err)
 		}
@@ -168,7 +168,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	toAdd := make([]types.LeagueMatch, 0, len(missing))
 	for _, id := range missing {
-		matchData, err := client.GetMatchData(id)
+		matchData, err := client.GetMatchData(id, userProfile.Region)
 		if err != nil {
 			log.Printf(
 				"Error fetching matchID in /lol/profile %s\nError: %v",
