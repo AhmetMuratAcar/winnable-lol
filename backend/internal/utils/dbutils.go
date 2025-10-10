@@ -134,7 +134,7 @@ func SummonerCacheCheck(ctx context.Context, pool *pgxpool.Pool, userInfo types.
 		return types.PUUIDCacheCheck{Found: false}, fmt.Errorf("SummonerCacheCheck query failed: %w", err)
 	}
 
-	stale := time.Since(updatedAt) > 24*time.Hour
+	stale := time.Since(updatedAt) > 2*time.Hour
 
 	return types.PUUIDCacheCheck{
 		Found:         true,
