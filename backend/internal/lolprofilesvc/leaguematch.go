@@ -39,6 +39,8 @@ func ToLeagueMatchPreview(matches []types.LeagueMatch, userPUUID string) []types
 					Deaths:             p.Deaths,
 					Items:              p.Items,
 					Kills:              p.Kills,
+					RiotIDGameName:     p.RiotIDGameName,
+					RiotIDTagLine:      p.RiotIDTagline,
 					Runes:              p.Runes,
 					Summoner1ID:        p.Summoner1ID,
 					Summoner2ID:        p.Summoner2ID,

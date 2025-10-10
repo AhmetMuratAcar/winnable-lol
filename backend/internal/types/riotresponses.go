@@ -78,6 +78,8 @@ type UserMatchPreview struct {
 	Deaths             int           `json:"deaths"`
 	Items              []int         `json:"items"`
 	Kills              int           `json:"kills"`
+	RiotIDGameName     string        `json:"riotIdGameName"`
+	RiotIDTagLine      string        `json:"riotIdTagLine"`
 	Runes              SummonerRunes `json:"runes"`
 	Summoner1ID        int           `json:"summoner1Id"`
 	Summoner2ID        int           `json:"summoner2Id"`
@@ -469,5 +471,5 @@ type RawLiveResponse struct {
 		PickTurn   int `json:"pickTurn"`
 	} `json:"bannedChampions"`
 	GameStartTime int `json:"gameStartTime"`
-	GameLength    int   `json:"gameLength"`
+	GameLength    int `json:"gameLength"`
 }
