@@ -471,6 +471,222 @@ func GetParticipantsForMatches(ctx context.Context, pool *pgxpool.Pool, ids []st
 	return out, nil
 }
 
+// GetMatchRowByID queries the matches table for a given matchID
+func GetMatchRowByID(ctx context.Context, pool *pgxpool.Pool, matchID string) (types.MatchRow, error) {
+	var out types.MatchRow
+
+	const query = `
+		SELECT
+			match_id,
+			end_of_game_result,
+			game_duration_sec,
+			game_ended_in_early_surrender,
+			game_start,
+			game_version,
+			queue_id,
+			winning_team,
+			bans_blue,
+			bans_red
+		FROM matches
+		WHERE match_id = $1;
+	`
+
+	// Accounting for native PostgreSQL Go types
+	var (
+		winningTeamPG int
+		bansBluePG    []int
+		bansRedPG     []int
+	)
+
+	err := pool.QueryRow(
+		ctx,
+		query,
+		matchID,
+	).Scan(
+		&out.MatchID,
+		&out.EndOfGameResult,
+		&out.GameDurationSec,
+		&out.GameEndedInEarlySurrender,
+		&out.GameStart,
+		&out.GameVersion,
+		&out.QueueID,
+		&winningTeamPG,
+		&bansBluePG,
+		&bansRedPG,
+	)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) || err.Error() == "no rows in result set" {
+			return out, fmt.Errorf("no match found for id %s: %w", matchID, err)
+		}
+		return out, fmt.Errorf("querying match %s: %w", matchID, err)
+	}
+
+	out.WinningTeam = int(winningTeamPG)
+	if len(bansBluePG) > 0 {
+		out.BansBlue = make([]int, len(bansBluePG))
+		for i, v := range bansBluePG {
+			out.BansBlue[i] = int(v)
+		}
+	}
+	if len(bansRedPG) > 0 {
+		out.BansRed = make([]int, len(bansRedPG))
+		for i, v := range bansRedPG {
+			out.BansRed[i] = int(v)
+		}
+	}
+
+	return out, nil
+}
+
+// GetParticipantRowsByID queries the match_participants table for a given matchID
+func GetParticipantRowsByID(ctx context.Context, pool *pgxpool.Pool, matchID string) ([]types.MatchParticipantRow, error) {
+	var out []types.MatchParticipantRow
+
+	const query = `
+		SELECT
+			match_id,
+			puuid,
+			participant_index,
+			team,
+			champion_id,
+			champ_level,
+			kills,
+			deaths,
+			assists,
+			gold_earned,
+			total_damage_to_champs,
+			total_minions_killed,
+			vision_score,
+			items,
+			summoner1_id,
+			summoner2_id,
+			team_position,
+			riot_id_game_name,
+			riot_id_tag_line,
+			summoner_level_at_match,
+			profile_icon_at_match,
+			game_start,
+			rune_main_keystone,
+			rune_main_1,
+			rune_main_2,
+			rune_main_3,
+			rune_second_1,
+			rune_second_2,
+			rune_stat_offense,
+			rune_stat_flex,
+			rune_stat_defense
+		FROM match_participants
+		WHERE match_id = $1
+		ORDER BY participant_index;
+	`
+
+	rows, err := pool.Query(ctx, query, matchID)
+	if err != nil {
+		return nil, fmt.Errorf("query match_participants for %s: %w", matchID, err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			mID                string
+			puuid              string
+			participantIdxI16  int16
+			teamI16            int16
+			championID         int
+			champLevel         int
+			kills              int
+			deaths             int
+			assists            int
+			goldEarned         int
+			totalDmgToChamps   int
+			totalMinions       int
+			visionScore        int
+			items              []int
+			s1ID               int
+			s2ID               int
+			teamPosition       string
+			riotGameName       string
+			riotTagLine        string
+			summonerLevelMatch int
+			profileIconMatch   int
+			gameStart          time.Time
+			runeMainKeystone   int
+			runeMain1          int
+			runeMain2          int
+			runeMain3          int
+			runeSecond1        int
+			runeSecond2        int
+			runeOffense        int
+			runeFlex           int
+			runeDefense        int
+		)
+
+		if err := rows.Scan(
+			&mID, &puuid, &participantIdxI16, &teamI16, &championID, &champLevel,
+			&kills, &deaths, &assists, &goldEarned, &totalDmgToChamps, &totalMinions,
+			&visionScore, &items, &s1ID, &s2ID, &teamPosition, &riotGameName,
+			&riotTagLine, &summonerLevelMatch, &profileIconMatch, &gameStart,
+			&runeMainKeystone, &runeMain1, &runeMain2, &runeMain3,
+			&runeSecond1, &runeSecond2, &runeOffense, &runeFlex, &runeDefense,
+		); err != nil {
+			return nil, fmt.Errorf("scan participant row for %s: %w", matchID, err)
+		}
+
+		out = append(out, types.MatchParticipantRow{
+			MatchID:              mID,
+			PUUID:                puuid,
+			ParticipantIndex:     int(participantIdxI16),
+			Team:                 int(teamI16),
+			ChampionID:           championID,
+			ChampLevel:           champLevel,
+			Kills:                kills,
+			Deaths:               deaths,
+			Assists:              assists,
+			GoldEarned:           goldEarned,
+			TotalDamageToChamps:  totalDmgToChamps,
+			TotalMinionsKilled:   totalMinions,
+			VisionScore:          visionScore,
+			Items:                items,
+			Summoner1ID:          s1ID,
+			Summoner2ID:          s2ID,
+			TeamPosition:         teamPosition,
+			RiotIDGameName:       riotGameName,
+			RiotIDTagLine:        riotTagLine,
+			SummonerLevelAtMatch: summonerLevelMatch,
+			ProfileIconAtMatch:   profileIconMatch,
+			GameStart:            gameStart,
+			Runes: types.SummonerRunes{
+				StatPerks: types.StatPerks{
+					Offense: runeOffense,
+					Flex:    runeFlex,
+					Defense: runeDefense,
+				},
+				MainTree: types.MainRuneTree{
+					Keystone: runeMainKeystone,
+					Rune1:    runeMain1,
+					Rune2:    runeMain2,
+					Rune3:    runeMain3,
+				},
+				SecondaryTree: types.SecondaryRuneTree{
+					Rune1: runeSecond1,
+					Rune2: runeSecond2,
+				},
+			},
+		})
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate match_participants for %s: %w", matchID, err)
+	}
+
+	if len(out) == 0 {
+		return nil, fmt.Errorf("no participants found for match id %s", matchID)
+	}
+
+	return out, nil
+}
+
 /* ------------------------ INSERT Queries ------------------------ */
 
 // AddMatchData updates the matches and match_participants tables with newly fetched matchData.
