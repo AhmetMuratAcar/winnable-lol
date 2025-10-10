@@ -171,7 +171,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		matchData, err := client.GetMatchData(id, userProfile.Region)
 		if err != nil {
 			log.Printf(
-				"Error fetching matchID in /lol/profile %s\nError: %v",
+				"Error fetching match data in /lol/profile %s\nError: %v",
 				id,
 				err,
 			)
