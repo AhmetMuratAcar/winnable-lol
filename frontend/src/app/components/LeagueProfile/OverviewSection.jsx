@@ -25,12 +25,12 @@ export default function ProfileOverview({ data }) {
         <PlayedWith
           playedWith={data.recentlyPlayedWith}
           playedAgainst={data.recentlyPlayedAgainst}
-          gameCount={data.matchData.length}
+          gameCount={data.matchPreviews.length}
         />
       </div>
 
       <div id="rightProfile" className="flex flex-col w-7/10 space-y-3">
-        <RecentGames recentGames={data.recentGames} totalGameCount={data.matchData.length} />
+        <RecentGames recentGames={data.recentGames} totalGameCount={data.matchPreviews.length} />
         <GamesSection />
       </div>
     </div>
