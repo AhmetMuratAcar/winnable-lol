@@ -80,3 +80,21 @@ func WriteRefreshToFile(data types.LeagueProfilePage, riotID string) error {
 	log.Printf("wrote %s refresh data to %s", riotID, path)
 	return nil
 }
+
+func WriteMatchDataToFile(data types.LeagueMatch, matchID string) error {
+	path := fmt.Sprintf("./devfiles/matches/%s_data.JSON", matchID)
+	f, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("failed to create match data file: %w", err)
+	}
+	defer f.Close()
+
+	enc := json.NewEncoder(f)
+	enc.SetIndent("", "  ")
+	if err := enc.Encode(data); err != nil {
+		return fmt.Errorf(" failed to write match data JSON: %w", err)
+	}
+
+	log.Printf("wrote %s match data to %s", matchID, path)
+	return nil
+}
