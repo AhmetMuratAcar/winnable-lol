@@ -65,7 +65,7 @@ func ConstructMatchDataMap(ctx context.Context, pool *pgxpool.Pool, matchIDs []s
 
 	for mID, m := range matches {
 		ps := participantsByMatch[mID]
-		lm := assembleLeagueMatch(m, ps)
+		lm := AssembleLeagueMatch(m, ps)
 		// copy to new var to safely take address in loop
 		v := lm
 		out[mID] = &v
@@ -74,8 +74,8 @@ func ConstructMatchDataMap(ctx context.Context, pool *pgxpool.Pool, matchIDs []s
 	return out, nil
 }
 
-// assembleLeagueMatch converts DB rows -> API struct
-func assembleLeagueMatch(m types.MatchRow, ps []types.MatchParticipantRow) types.LeagueMatch {
+// AssembleLeagueMatch converts DB rows -> API struct
+func AssembleLeagueMatch(m types.MatchRow, ps []types.MatchParticipantRow) types.LeagueMatch {
 	lm := types.LeagueMatch{
 		EndOfGameResult:           m.EndOfGameResult,
 		GameDuration:              m.GameDurationSec,

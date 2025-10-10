@@ -172,7 +172,7 @@ type LeagueProfilePage struct {
 	LastUpdated   time.Time            `json:"lastUpdated"`
 	Ranks         []LeagueRank         `json:"ranks"`
 	MasteryData   MasteryData          `json:"-"`
-	MatchData     []LeagueMatch        `json:"matchData"`
+	MatchData     []LeagueMatch        `json:"-"`
 	MatchPreviews []LeagueMatchPreview `json:"matchPreviews"`
 	PlayedWith    []PlayedSummoner     `json:"recentlyPlayedWith"`
 	PlayedAgainst []PlayedSummoner     `json:"recentlyPlayedAgainst"`
