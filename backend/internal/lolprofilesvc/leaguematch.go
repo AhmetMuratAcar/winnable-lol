@@ -4,6 +4,57 @@ import (
 	"winnable/internal/types"
 )
 
+// ToLeagueMatchPreview converts LeagueMatch -> LeagueMatchPreview
+func ToLeagueMatchPreview(matches []types.LeagueMatch, userPUUID string) []types.LeagueMatchPreview {
+	var out []types.LeagueMatchPreview
+	if len(matches) == 0 {
+		return out
+	}
+
+	for _, m := range matches {
+		curr := types.LeagueMatchPreview{
+			EndOfGameResult:           m.EndOfGameResult,
+			GameDuration:              m.GameDuration,
+			GameEndedInEarlySurrender: m.GameEndedInEarlySurrender,
+			GameStartTimestamp:        m.GameStartTimestamp,
+			MatchID:                   m.MatchID,
+			QueueId:                   m.QueueId,
+			WinningTeam:               m.WinningTeam,
+		}
+
+		for _, p := range m.Participants {
+			participant := types.LeagueMatchParticipantPreview{
+				ChampionID:     p.ChampionID,
+				RiotIDGameName: p.RiotIDGameName,
+				RiotIDTagline:  p.RiotIDTagline,
+			}
+
+			curr.Participants = append(curr.Participants, participant)
+
+			if p.PUUID == userPUUID {
+				userPreview := types.UserMatchPreview{
+					Assists:            p.Assists,
+					ChampionID:         p.ChampionID,
+					ChampLevel:         p.ChampLevel,
+					Deaths:             p.Deaths,
+					Items:              p.Items,
+					Kills:              p.Kills,
+					Runes:              p.Runes,
+					Summoner1ID:        p.Summoner1ID,
+					Summoner2ID:        p.Summoner2ID,
+					Team:               p.Team,
+					TotalMinionsKilled: p.TotalMinionsKilled,
+				}
+				curr.UserPreview = userPreview
+			}
+		}
+
+		out = append(out, curr)
+	}
+
+	return out
+}
+
 func ToLeagueMatch(raw types.RawMatchResponse) types.LeagueMatch {
 	res := types.LeagueMatch{
 		EndOfGameResult:           raw.Info.EndOfGameResult,

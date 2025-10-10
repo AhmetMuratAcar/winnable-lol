@@ -132,6 +132,7 @@ func (h *LolRefreshHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			userProfile.MatchData = append(userProfile.MatchData, *m)
 		}
 	}
+	userProfile.MatchPreviews = lolprofilesvc.ToLeagueMatchPreview(userProfile.MatchData, userProfile.PUUID)
 	log.Print("Match data successfully added in /lol/refresh")
 
 	userProfile.ProfileIconID, userProfile.Level, err = client.GetSummonerIconAndLevel(

@@ -188,6 +188,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			userProfile.MatchData = append(userProfile.MatchData, *m)
 		}
 	}
+	userProfile.MatchPreviews = lolprofilesvc.ToLeagueMatchPreview(userProfile.MatchData, userProfile.PUUID)
 	log.Print("Match data successfully added")
 
 	// Level and icon ID calls
