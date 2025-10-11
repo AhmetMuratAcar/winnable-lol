@@ -43,7 +43,7 @@ type LeagueMatchPreview struct {
 	MatchID                   string                          `json:"matchId"`
 	Participants              []LeagueMatchParticipantPreview `json:"participants"`
 	QueueId                   int                             `json:"queueId"`
-	UserPreview               UserMatchPreview                `json:"usserPreview"`
+	UserPreview               UserMatchPreview                `json:"userPreview"`
 	WinningTeam               int                             `json:"winningTeam"`
 }
 
