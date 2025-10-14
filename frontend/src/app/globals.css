@@ -7,6 +7,9 @@
   --contrast-border: rgba(107, 114, 128, 0.3); /* gray500/30 */
   --pastel-red: #c31b3c; /* dark pastel red */
   --chart: #ff2056; /* rose-500 red */
+  --league-win: #203e98;
+  --league-loss: #4f2c2f;
+  --league-remake: #35353e;
 }
 
 @theme inline {
