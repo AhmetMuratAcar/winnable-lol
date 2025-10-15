@@ -57,7 +57,7 @@ export default function RoleBarGraph({ roles }) {
         <Bar
           dataKey="wins"
           stackId="a"
-          fill="var(--color-green-500)"
+          fill="var(--color-blue-500)"
           barSize={20}
           background={{ fill: "var(--contrast-border)" }}
         />

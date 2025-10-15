@@ -45,7 +45,7 @@ export default function RanksSection({ rankData = [] }) {
             </div>
 
             <div className="mt-2 h-2 w-full flex rounded overflow-hidden">
-              <div className="bg-green-500" style={{ width: `${winRate}%` }} />
+              <div className="bg-blue-500" style={{ width: `${winRate}%` }} />
               <div className="bg-(--pastel-red)" style={{ width: `${100 - winRate}%` }} />
             </div>
           </div>

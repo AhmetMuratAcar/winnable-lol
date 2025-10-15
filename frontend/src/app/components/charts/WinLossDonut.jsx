@@ -8,7 +8,7 @@ export default function WinLossDonut({ wins, losses }) {
 
   const chartData = useMemo(
     () => [
-      { name: "Wins", value: wins || 0, class: "fill-green-500" },
+      { name: "Wins", value: wins || 0, class: "fill-blue-500" },
       { name: "Losses", value: losses || 0, class: "fill-(--pastel-red)" },
     ],
     [wins, losses],
@@ -38,7 +38,7 @@ export default function WinLossDonut({ wins, losses }) {
           <Label
             value={winRate == null ? "—" : `${winRate}%`}
             position="center"
-            className={`font-bold ${winRate != null && winRate < 50 ? "fill-red-500" : "fill-green-500"}`}
+            className={`font-bold ${winRate != null && winRate < 50 ? "fill-red-500" : "fill-blue-500"}`}
           />
         </Pie>
         {/* <Tooltip
