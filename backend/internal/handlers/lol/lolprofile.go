@@ -32,6 +32,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	start := time.Now()
 	log.Println("----------------------------")
 	log.Println("Received LoL profile request")
 
@@ -238,6 +239,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		log.Print("games summary constructed")
 	}
+	log.Printf("Profile request completed in %s", time.Since(start))
 
 	// Writing to file for dev
 	if os.Getenv("ENV") == "development" {
@@ -282,7 +284,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 
 			for _, c := range profile.MasteryData.ChampionMasteries {
-				profile.MasteryData.TotalMastery += c.ChampionPoints
+				profile.MasteryData.TotalMastery += c.ChampionLevel
 				profile.MasteryData.TotalMasteryPoints += c.ChampionPoints
 			}
 			profile.MasteryData.ChampionsPlayed = len(profile.MasteryData.ChampionMasteries)
