@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"winnable/internal/config"
@@ -25,7 +26,7 @@ func SyncSummonerProfileData(
 	var sr = []types.SummonerRow{{
 		PUUID:              userProfile.PUUID,
 		Region:             userProfile.Region,
-		GameName:           userProfile.GameName,
+		GameName:           strings.TrimSpace(userProfile.GameName),
 		TagLine:            userProfile.TagLine,
 		ProfileIconID:      userProfile.ProfileIconID,
 		SummonerLevel:      userProfile.Level,
@@ -36,8 +37,14 @@ func SyncSummonerProfileData(
 		IsPopulated:        true,
 	}}
 
+	// Query by PUUID in case name change or region transfer
+	puuidCheck, err := PUUIDCheck(ctx, pool, userProfile.PUUID)
+	if err != nil {
+		return fmt.Errorf("error calling PUUIDCheck: %w", err)
+	}
+
 	// summoners table conditional
-	if cacheCheck.Found {
+	if cacheCheck.Found || puuidCheck {
 		if err := UpdateSummonersAll(ctx, pool, sr); err != nil {
 			return fmt.Errorf("error calling UpdateSummonersAll: %w", err)
 		}
@@ -61,6 +68,19 @@ func SyncSummonerProfileData(
 }
 
 /* ------------------------ SELECT Queries ------------------------ */
+
+// PUUIDCheck checks if a given PUUID exists in the summoners table
+func PUUIDCheck(ctx context.Context, pool *pgxpool.Pool, PUUID string) (bool, error) {
+	const query = `SELECT EXISTS(SELECT 1 FROM summoners WHERE puuid = $1);`
+
+	var exists bool
+	err := pool.QueryRow(ctx, query, PUUID).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
+}
 
 // GetPUUID queries summoners table for given user's PUUID
 func GetPUUID(ctx context.Context, pool *pgxpool.Pool, userInfo types.RequestBody) (string, error) {
@@ -1041,7 +1061,7 @@ func AddNewSummoners(ctx context.Context, pool *pgxpool.Pool, rows []types.Summo
 
 /* ------------------------ UPDATE Queries ------------------------ */
 
-// UpdateSummonersAll updates all contewnts of a summoners' table row for each row given in rows
+// UpdateSummonersAll updates all contents of a summoners' table row for each row given in rows
 func UpdateSummonersAll(ctx context.Context, pool *pgxpool.Pool, rows []types.SummonerRow) error {
 	if len(rows) == 0 {
 		return nil
