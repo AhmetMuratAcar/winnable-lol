@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"winnable/internal/config"
@@ -26,7 +25,7 @@ func SyncSummonerProfileData(
 	var sr = []types.SummonerRow{{
 		PUUID:              userProfile.PUUID,
 		Region:             userProfile.Region,
-		GameName:           strings.TrimSpace(userProfile.GameName),
+		GameName:           userProfile.GameName,
 		TagLine:            userProfile.TagLine,
 		ProfileIconID:      userProfile.ProfileIconID,
 		SummonerLevel:      userProfile.Level,

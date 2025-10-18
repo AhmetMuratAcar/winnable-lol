@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"winnable/internal/lolprofilesvc"
@@ -308,7 +307,7 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					row := types.SummonerRow{
 						PUUID:         id,
 						Region:        profile.Region,
-						GameName:      strings.TrimSpace(p.RiotIDGameName),
+						GameName:      p.RiotIDGameName,
 						TagLine:       p.RiotIDTagline,
 						ProfileIconID: p.ProfileIconID,
 						SummonerLevel: p.SummonerLevel,
