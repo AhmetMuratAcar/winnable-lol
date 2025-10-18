@@ -481,13 +481,13 @@ export function idValidation({ region, riotID }) {
     return result;
   }
 
-  const parts = riotID.trim().split("#");
+  const parts = riotID.split("#");
   if (parts.length > 2) {
     return result;
   }
 
-  const namePart = parts[0].trim();
-  const tagPart = parts[1] ? parts[1].trim() : regionTag;
+  const namePart = parts[0];
+  const tagPart = parts[1] ? parts[1] : regionTag;
 
   result.gameName = namePart;
   result.tagLine = tagPart;
