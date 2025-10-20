@@ -35,3 +35,10 @@ export function calcLastUpdated(lastUpdated) {
 function plural(num, unit) {
   return `${num} ${unit}${num === 1 ? "" : "s"} ago`;
 }
+
+export function totalToReadable(gameDuration) {
+  const minutes = Math.floor(gameDuration / 60);
+  const seconds = gameDuration % 60;
+
+  return `${minutes}:${seconds}`;
+}
