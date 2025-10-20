@@ -451,8 +451,32 @@ const QUEUE_INFO = {
   },
 };
 
+const MATCH_REGION_TO_SERVER = {
+  NA1: "NA1",
+  EUW1: "EUW",
+  EUN1: "EUNE",
+  ME1: "ME1",
+  OC1: "OC",
+  // Manually tested routing for ones above. TODO: ones below
+  LA2: "LAS",
+  LA1: "LAN",
+  SG2: "SG2",
+  KR: "KR1",
+  JP1: "JP1",
+  BR1: "BR1",
+  RU: "RU1",
+  TR1: "TR1",
+  TW2: "TW2",
+  VN2: "VN2",
+};
+
+export function matchRegionToServer(matchRegion) {
+  const server = MATCH_REGION_TO_SERVER[matchRegion] || "unknown";
+  return server;
+}
+
 export function queueIdToName(queueID) {
-  const queueName = QUEUE_INFO[queueID].name || "unknown";
+  const queueName = QUEUE_INFO[queueID]?.name || "unknown";
   return queueName;
 }
 
