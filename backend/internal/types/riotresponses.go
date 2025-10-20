@@ -72,19 +72,20 @@ type LeagueMatchParticipant struct {
 }
 
 type UserMatchPreview struct {
-	Assists            int           `json:"assists"`
-	ChampionID         int           `json:"championId"`
-	ChampLevel         int           `json:"champLevel"`
-	Deaths             int           `json:"deaths"`
-	Items              []int         `json:"items"`
-	Kills              int           `json:"kills"`
-	RiotIDGameName     string        `json:"riotIdGameName"`
-	RiotIDTagLine      string        `json:"riotIdTagLine"`
-	Runes              SummonerRunes `json:"runes"`
-	Summoner1ID        int           `json:"summoner1Id"`
-	Summoner2ID        int           `json:"summoner2Id"`
-	Team               int           `json:"team"`
-	TotalMinionsKilled int           `json:"totalMinionsKilled"`
+	Assists            int    `json:"assists"`
+	ChampionID         int    `json:"championId"`
+	ChampLevel         int    `json:"champLevel"`
+	Deaths             int    `json:"deaths"`
+	Items              []int  `json:"items"`
+	Kills              int    `json:"kills"`
+	RiotIDGameName     string `json:"riotIdGameName"`
+	RiotIDTagLine      string `json:"riotIdTagLine"`
+	PrimaryRune        int    `json:"primaryRune"`
+	SecondaryRune      int    `json:"secondaryRune"`
+	Summoner1ID        int    `json:"summoner1Id"`
+	Summoner2ID        int    `json:"summoner2Id"`
+	Team               int    `json:"team"`
+	TotalMinionsKilled int    `json:"totalMinionsKilled"`
 }
 
 type LeagueMatchParticipantPreview struct {
