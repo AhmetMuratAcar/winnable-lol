@@ -38,7 +38,7 @@ export async function getProfile(params: Params) {
       return res.json();
     },
     ["profile", region, slug],
-    { revalidate: 300, tags: [`profile:${region}:${slug}`] }, // 5 minutes
+    { revalidate: 1, tags: [`profile:${region}:${slug}`] }, // 5 minutes
   );
 
   return cached();

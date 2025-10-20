@@ -25,10 +25,10 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-img {
+/* img {
   height: auto;
   width: auto;
-}
+} */
 
 /* Stops the autofill options from removing CSS of the form */
 input:-webkit-autofill,
