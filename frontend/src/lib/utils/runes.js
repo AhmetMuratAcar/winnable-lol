@@ -101,7 +101,12 @@ export function primaryIdToImagePath(primaryRuneId) {
     return `${IMG_PATH}/img/perk-images/Styles/RunesIcon.png`;
   }
 
-  const runePath = `${IMG_PATH}/img/perk-images/Styles/${runeInfo.tree}/${runeInfo.key}/${runeInfo.key}.png`;
+  let runePath;
+  if (runeInfo.key === "LethalTempo") {
+    runePath = `${IMG_PATH}/img/perk-images/Styles/${runeInfo.tree}/${runeInfo.key}/${runeInfo.key}Temp.png`;
+  } else {
+    runePath = `${IMG_PATH}/img/perk-images/Styles/${runeInfo.tree}/${runeInfo.key}/${runeInfo.key}.png`;
+  }
   return runePath;
 }
 
