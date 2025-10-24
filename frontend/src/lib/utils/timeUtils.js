@@ -40,5 +40,9 @@ export function totalToReadable(gameDuration) {
   const minutes = Math.floor(gameDuration / 60);
   const seconds = gameDuration % 60;
 
+  if (seconds.toString().length === 1) {
+    return `${minutes}:0${seconds}`;
+  }
+
   return `${minutes}:${seconds}`;
 }
