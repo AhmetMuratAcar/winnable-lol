@@ -46,3 +46,25 @@ export function totalToReadable(gameDuration) {
 
   return `${minutes}:${seconds}`;
 }
+
+export function calcWhenPlayed(gameEndTimestamp) {
+  const now = Date.now();
+  const diffMs = now - gameEndTimestamp;
+  const diffSec = diffMs / 1000;
+  const diffMin = diffSec / 60;
+  const diffHr = diffMin / 60;
+  const diffDay = diffHr / 24;
+  const diffWeek = diffDay / 7;
+  const diffMonth = diffDay / 30;
+  const diffYear = diffDay / 365;
+
+  if (diffMin < 1) return "Just now";
+  if (diffHr < 1) return `${Math.round(diffMin)} minute${Math.round(diffMin) !== 1 ? "s" : ""} ago`;
+  if (diffDay < 1) return `${Math.round(diffHr)} hour${Math.round(diffHr) !== 1 ? "s" : ""} ago`;
+  if (diffWeek < 1) return `${Math.round(diffDay)} day${Math.round(diffDay) !== 1 ? "s" : ""} ago`;
+  if (diffMonth < 1)
+    return `${Math.round(diffWeek)} week${Math.round(diffWeek) !== 1 ? "s" : ""} ago`;
+  if (diffYear < 1)
+    return `${Math.round(diffMonth)} month${Math.round(diffMonth) !== 1 ? "s" : ""} ago`;
+  return `${Math.round(diffYear)} year${Math.round(diffYear) !== 1 ? "s" : ""} ago`;
+}
