@@ -144,10 +144,12 @@ func (h *LoLProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if len(matchIDs) < 20 {
 		matchIDs, err = client.GetSummonerMatchIDs(userProfile.PUUID, userProfile.Region, startIndex, matchCount)
 		if err != nil {
-			log.Printf("Error calling GetSUmmonerMatchIDs in /lol/profile: %v", err)
+			log.Printf("Error calling GetSummonerMatchIDs in /lol/profile: %v", err)
 		}
 	}
-	log.Print("MatchIDs fetch successful")
+	if err == nil {
+		log.Print("MatchIDs fetch successful")
+	}
 
 	matchDataMap, err := lolprofilesvc.ConstructMatchDataMap(ctx, h.pool, matchIDs)
 	if err != nil {
