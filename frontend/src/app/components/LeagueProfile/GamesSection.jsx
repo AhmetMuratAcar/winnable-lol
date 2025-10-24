@@ -53,11 +53,12 @@ function LeagueMatchContainer({ matchData, open = false }) {
   } else {
     gameResult = "Defeat";
   }
+
   const matchRegion = matchData.matchId.split("_")[0];
   const region = matchRegionToServer(matchRegion);
   const userChamp = champIdToName(matchData.userPreview.championId);
-  const KDA =
-    (matchData.userPreview.kills + matchData.userPreview.assists) / matchData.userPreview.deaths;
+  const { kills, deaths, assists } = matchData.userPreview;
+  const KDA = deaths === 0 ? kills + assists : (kills + assists) / deaths;
   const CSPM = matchData.userPreview.totalMinionsKilled / (matchData.gameDuration / 60);
   const gameEndTimestamp = matchData.gameStartTimeStamp + matchData.gameDuration * 1000;
 
