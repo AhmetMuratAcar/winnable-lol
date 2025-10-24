@@ -89,9 +89,10 @@ func ToLeagueMatch(raw types.RawMatchResponse) types.LeagueMatch {
 			SummonerLevel:               p.SummonerLevel,
 			TeamPosition:                p.TeamPosition,
 			TotalDamageDealtToChampions: p.TotalDamageDealtToChampions,
-			TotalMinionsKilled:          p.TotalMinionsKilled,
 			VisionScore:                 p.VisionScore,
 		}
+
+		curr.TotalMinionsKilled = p.TotalMinionsKilled + p.NeutralMinionsKilled
 
 		curr.Runes = types.SummonerRunes{
 			StatPerks: types.StatPerks{
