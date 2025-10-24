@@ -1,6 +1,6 @@
 "use client";
 import { matchRegionToServer, queueIdToName } from "@/lib/utils/stringUtils";
-import { totalToReadable } from "@/lib/utils/timeUtils";
+import { calcWhenPlayed, totalToReadable } from "@/lib/utils/timeUtils";
 import { useState } from "react";
 import { CURR_PATCH, IMG_PATH } from "@/lib/constants";
 import Image from "next/image";
@@ -56,25 +56,29 @@ function LeagueMatchContainer({ matchData, open = false }) {
   const matchRegion = matchData.matchId.split("_")[0];
   const region = matchRegionToServer(matchRegion);
   const userChamp = champIdToName(matchData.userPreview.championId);
+  const KDA =
+    (matchData.userPreview.kills + matchData.userPreview.assists) / matchData.userPreview.deaths;
+  const CSPM = matchData.userPreview.totalMinionsKilled / (matchData.gameDuration / 60);
+  const gameEndTimestamp = matchData.gameStartTimeStamp + matchData.gameDuration * 1000;
 
   const colorMap = {
     Default: {
       bg: "bg-(--league-remake)",
-      border: "border-(--league-remake)",
+      contrast: "bg-(--contrast)",
       button: "bg-(--contrast) hover:bg-(--league-remake)",
     },
     Victory: {
       bg: "bg-(--league-win)",
-      border: "border-(--league-win)",
+      contrast: "bg-blue-500",
       button: "bg-blue-500 hover:bg-(--league-win)",
     },
     Defeat: {
       bg: "bg-(--league-loss)",
-      border: "border-(--league-loss)",
+      contrast: "bg-red-500",
       button: "bg-(--pastel-red) hover:bg-(--league-loss)",
     },
   };
-  const { bg, button } = colorMap[gameResult] || colorMap.Default;
+  const { bg, contrast, button } = colorMap[gameResult] || colorMap.Default;
 
   const [isOpen, setIsOpen] = useState(open);
   const handleFilterOpening = () => {
@@ -92,25 +96,23 @@ function LeagueMatchContainer({ matchData, open = false }) {
     >
       <div
         id="previewData"
-        className="text-xs grid w-full p-3 gap-6 items-center grid-cols-[100px_1fr_max-content]"
+        className="text-xs grid w-full py-1 px-3 gap-6 items-center grid-cols-[100px_1fr_max-content]"
       >
         <div id="matchDetails" className="flex flex-col justify-center">
-          <p>{queueIdToName(matchData.queueId)}</p>
-          <p>X Days Ago</p>
-          <p>
-            {/* {matchData.matchId} -  */}
-            {gameResult}
-          </p>
-          <p>{totalToReadable(matchData.gameDuration)}</p>
+          <p className="font-bold text-sm">{queueIdToName(matchData.queueId)}</p>
+          <p className="text-gray-400">{calcWhenPlayed(gameEndTimestamp)}</p>
+          <div className={`block ${contrast} h-px w-1/2 my-1`}></div>
+          <p>{gameResult}</p>
+          <p className="text-gray-400">{totalToReadable(matchData.gameDuration)}</p>
         </div>
 
-        <div id="matchStats" className="flex items-center justify-center">
-          <div className="flex flex-row items-center gap-1">
+        <div id="previewMain" className="flex items-center justify-center space-x-5">
+          <div id="previewImages" className="flex flex-row items-center gap-1">
             <div className="relative inline-block">
               <Image
                 src={`${IMG_PATH}/${CURR_PATCH}/img/champion/${userChamp}.png`}
-                width={48}
-                height={48}
+                width={52}
+                height={52}
                 className="rounded"
                 alt={`${userChamp} image`}
               />
@@ -122,8 +124,8 @@ function LeagueMatchContainer({ matchData, open = false }) {
               <li>
                 <Image
                   src={summonerIdToImagePath(matchData.userPreview.summoner1Id)}
-                  width={22}
-                  height={22}
+                  width={25}
+                  height={25}
                   className="mb-0.5"
                   alt="summoner spell image"
                 />
@@ -131,8 +133,8 @@ function LeagueMatchContainer({ matchData, open = false }) {
               <li>
                 <Image
                   src={summonerIdToImagePath(matchData.userPreview.summoner2Id)}
-                  width={22}
-                  height={22}
+                  width={25}
+                  height={25}
                   alt="summoner spell image"
                 />
               </li>
@@ -141,8 +143,8 @@ function LeagueMatchContainer({ matchData, open = false }) {
               <li>
                 <Image
                   src={primaryIdToImagePath(matchData.userPreview.primaryRune)}
-                  width={22}
-                  height={22}
+                  width={25}
+                  height={25}
                   className="mb-0.5"
                   alt="rune image"
                 />
@@ -150,12 +152,56 @@ function LeagueMatchContainer({ matchData, open = false }) {
               <li>
                 <Image
                   src={secondaryIdToTreeImagePath(matchData.userPreview.secondaryRune)}
-                  width={22}
-                  height={22}
+                  width={25}
+                  height={25}
                   alt="rune image"
                 />
               </li>
             </ul>
+          </div>
+
+          <div id="previewStats" className="flex flex-col items-center justify-center">
+            <div className="text-base">
+              <span>{matchData.userPreview.kills} / </span>
+              <span className="text-red-500">{matchData.userPreview.deaths} </span>
+              <span>/ {matchData.userPreview.assists}</span>
+            </div>
+            <p className="text-gray-400">{KDA.toFixed(2)} KDA</p>
+            <p className="text-gray-400">
+              {matchData.userPreview.totalMinionsKilled} CS ({CSPM.toFixed(1)})
+            </p>
+          </div>
+
+          <div id="previewItems" className="flex items-center gap-2">
+            {/* 2 rows of 3 */}
+            <div className="grid grid-cols-3 grid-rows-2 gap-1">
+              {matchData.userPreview.items.slice(0, 6).map((itemId, index) => (
+                <div className={`h-6 w-6 ${contrast} rounded`} key={`${itemId} - ${index}`}>
+                  {itemId !== 0 && (
+                    <Image
+                      height={25}
+                      width={25}
+                      src={`${IMG_PATH}/${CURR_PATCH}/img/item/${itemId}.png`}
+                      alt={`Item ${itemId} image`}
+                      className="rounded"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Ward */}
+            <div className="flex items-center">
+              <div className="w-10 h-10flex items-center justify-center rounded">
+                <Image
+                  height={25}
+                  width={25}
+                  src={`${IMG_PATH}/${CURR_PATCH}/img/item/${matchData.userPreview.items[6]}.png`}
+                  alt="item image"
+                  className="rounded"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -199,7 +245,10 @@ function LeagueMatchContainer({ matchData, open = false }) {
           transition-colors duration-300
         `}
       >
-        <button onClick={handleFilterOpening} className="w-full h-full hover:cursor-pointer">
+        <button
+          onClick={handleFilterOpening}
+          className="w-full h-full pb-1 flex items-end justify-center hover:cursor-pointer"
+        >
           {!isOpen ? "v" : "A"}
         </button>
       </div>
