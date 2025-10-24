@@ -383,7 +383,7 @@ export default function RecentGames({ recentGames, totalGameCount }) {
                             src={`${IMG_PATH}/img/champion/tiles/${c.championName}_0.jpg`}
                             width={25}
                             height={25}
-                            className="rounded mr-2 border border-(--contrast-border)"
+                            className="rounded mr-2 border border-(--contrast-border) img-auto"
                             alt={`${c.championName} image`}
                           />
                           <div className="flex flex-col">

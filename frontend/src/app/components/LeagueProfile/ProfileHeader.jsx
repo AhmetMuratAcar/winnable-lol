@@ -23,9 +23,9 @@ export default function ProfileHeader({ headerData }) {
           <Image
             src={profileIconSrc}
             alt="summoner profile icon"
-            width={100}
-            height={100}
-            className="rounded-lg border border-(--contrast-border)"
+            width={128}
+            height={128}
+            className="rounded-lg border border-(--contrast-border) img-auto"
           />
           <p
             className="

@@ -17,7 +17,7 @@ function PlayerRow({ item, region, baseProfileIconPath }) {
             alt="summoner profile icon"
             width={20}
             height={20}
-            className="rounded-lg"
+            className="rounded-lg img-auto"
           />
           <span className="truncate">
             {item.gameName}#{item.tagLine}

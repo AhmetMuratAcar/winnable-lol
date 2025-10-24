@@ -24,6 +24,7 @@ export default function RanksSection({ rankData = [] }) {
                   alt={`${label} queue emblem`}
                   width={62}
                   height={62}
+                  className="img-auto"
                 />
                 <div className="leading-tight">
                   <p className="text-l font-extrabold">
