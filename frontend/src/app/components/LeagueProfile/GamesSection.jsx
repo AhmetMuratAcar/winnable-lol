@@ -13,7 +13,7 @@ export default function GamesSection({ matchPreviews = [] }) {
   // TODO: Create custom components for the different modes (eg. Arena) and map
   // to components based on queueID
   return (
-    <div className="w-full space-y-3 mb-5">
+    <div className="w-full space-y-2 mb-5">
       {matchPreviews.map((matchData, index) => (
         <LeagueMatchContainer key={index} matchData={matchData} />
       ))}
