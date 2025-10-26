@@ -262,7 +262,7 @@ export default function RecentGames({ recentGames, totalGameCount }) {
 
   // default
   return (
-    <div className="w-full bg-(--contrast) rounded border-(--contrast-border) border- p-4">
+    <div className="w-full bg-(--contrast) rounded border-(--contrast-border) border p-4">
       <div className="border-b-1 border-(--contrast-border) mb-3 pb-4 flex items-center justify-between">
         <h3 className="font-semibold">Last {recentGames.matchSummaries.length} Ranked Games</h3>
 
