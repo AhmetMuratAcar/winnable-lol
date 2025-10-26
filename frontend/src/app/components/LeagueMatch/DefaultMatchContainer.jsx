@@ -75,7 +75,6 @@ export default function LeagueMatchContainer({ matchData }) {
       return;
     }
 
-    // Subsequent clicks → just toggle
     setIsOpen((prev) => !prev);
   };
 
@@ -260,16 +259,17 @@ export default function LeagueMatchContainer({ matchData }) {
         </div>
       </div>
 
+      {/* Expanded match */}
       {showDiv && (
         <div
           id={`match-extra-${matchData.matchId}`}
           className={`w-full bg-(--contrast) p-3 mt-2 rounded ${isOpen ? "" : "hidden"}`}
         >
-          {loading && <p className="text-gray-400 text-sm">Loading…</p>}
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {loading && <p className="text-gray-400 italic">Loading…</p>}
+          {error && <p className="text-gray-400 italic">{error}</p>}
           {details && <ExpandedMatchContainer completeData={details} />}
           {!loading && !error && !details && (
-            <p className="text-gray-400 text-sm">No data returned.</p>
+            <p className="text-gray-400 italic">No data returned.</p>
           )}
         </div>
       )}
