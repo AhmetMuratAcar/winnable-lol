@@ -104,6 +104,8 @@ export function primaryIdToImagePath(primaryRuneId) {
   let runePath;
   if (runeInfo.key === "LethalTempo") {
     runePath = `${IMG_PATH}/img/perk-images/Styles/${runeInfo.tree}/${runeInfo.key}/${runeInfo.key}Temp.png`;
+  } else if (runeInfo.key === "Aftershock") {
+    runePath = `${IMG_PATH}/img/perk-images/Styles/${runeInfo.tree}/Veteran${runeInfo.key}/Veteran${runeInfo.key}.png`;
   } else {
     runePath = `${IMG_PATH}/img/perk-images/Styles/${runeInfo.tree}/${runeInfo.key}/${runeInfo.key}.png`;
   }
