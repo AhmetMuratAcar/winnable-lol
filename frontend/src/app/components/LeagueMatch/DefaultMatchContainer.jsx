@@ -7,6 +7,8 @@ import Image from "next/image";
 import { champIdToName } from "@/lib/utils/champs";
 import { summonerIdToImagePath } from "@/lib/utils/summonerSpells";
 import { primaryIdToImagePath, secondaryIdToTreeImagePath } from "@/lib/utils/runes";
+import ExpandedMatchContainer from "./ExpandedDefaultMatch";
+import { getMatch } from "@/lib/client/lol";
 
 export default function LeagueMatchContainer({ matchData }) {
   const didWin =
@@ -42,7 +44,7 @@ export default function LeagueMatchContainer({ matchData }) {
     },
     Defeat: {
       bg: "bg-(--league-loss)",
-      contrast: "bg-red-500",
+      contrast: "bg-(--pastel-red)",
       button: "bg-(--pastel-red) hover:bg-(--league-loss)",
     },
   };
@@ -54,14 +56,26 @@ export default function LeagueMatchContainer({ matchData }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleToggle = () => {
-    // first click → create and show the div
+  const handleToggle = async () => {
     if (!showDiv) {
-      setShowDiv(true);
-      setIsOpen(true);
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getMatch(matchData.matchId);
+        setDetails(data);
+        setShowDiv(true);
+        setIsOpen(true);
+      } catch (e) {
+        setError(e?.message || "Failed to load match data.");
+        setShowDiv(true);
+        setIsOpen(true);
+      } finally {
+        setLoading(false);
+      }
       return;
     }
-    // next clicks → toggle visibility
+
+    // Subsequent clicks → just toggle
     setIsOpen((prev) => !prev);
   };
 
@@ -101,7 +115,7 @@ export default function LeagueMatchContainer({ matchData }) {
                   {matchData.userPreview.champLevel}
                 </span>
               </div>
-              <ul id="Summoners">
+              <ul id="Summoners" className="flex flex-col items-center">
                 <li>
                   <Image
                     src={summonerIdToImagePath(matchData.userPreview.summoner1Id)}
@@ -120,7 +134,7 @@ export default function LeagueMatchContainer({ matchData }) {
                   />
                 </li>
               </ul>
-              <ul id="Runes">
+              <ul id="Runes" className="flex flex-col items-center">
                 <li>
                   <Image
                     src={primaryIdToImagePath(matchData.userPreview.primaryRune)}
@@ -247,11 +261,15 @@ export default function LeagueMatchContainer({ matchData }) {
       </div>
 
       {showDiv && (
-        <div id={`match-extra-${matchData.matchId}`} className="w-full rounded mt-2">
-          {isOpen && (
-            <div className="w-full bg-(--contrast)  rounded p-3">
-              <p className="text-sm">Opened up: {matchData.matchId}</p>
-            </div>
+        <div
+          id={`match-extra-${matchData.matchId}`}
+          className={`w-full bg-(--contrast) p-3 mt-2 rounded ${isOpen ? "" : "hidden"}`}
+        >
+          {loading && <p className="text-gray-400 text-sm">Loading…</p>}
+          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {details && <ExpandedMatchContainer completeData={details} />}
+          {!loading && !error && !details && (
+            <p className="text-gray-400 text-sm">No data returned.</p>
           )}
         </div>
       )}
