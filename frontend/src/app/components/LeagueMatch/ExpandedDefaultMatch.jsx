@@ -57,7 +57,20 @@ export default function ExpandedMatchContainer({ completeData, userId, region })
           <col style={{ width: "9%" }} />
           <col style={{ width: "21%" }} />
         </colgroup>
-        <thead>
+        <tbody className={`${blueTeamBg} text-xs`}>
+          {blueTeam.map((pData, index) => (
+            <ParticipantRow
+              key={index}
+              participant={pData}
+              metadata={{
+                ...matchMetadata,
+                contrast: blueTeamContrast,
+                userContrast: blueUserContrast,
+              }}
+            />
+          ))}
+        </tbody>
+        <tfoot>
           <tr className="text-xs text-gray-400">
             <th className="text-left flex gap-x-1 py-2 pl-2">
               <div className={`font-bold ${blueTeamText}`}>{didBlueWin ? "Victory" : "Defeat"}</div>
@@ -79,21 +92,12 @@ export default function ExpandedMatchContainer({ completeData, userId, region })
               <div>Items</div>
             </th>
           </tr>
-        </thead>
-        <tbody className={`${blueTeamBg} text-xs`}>
-          {blueTeam.map((pData, index) => (
-            <ParticipantRow
-              key={index}
-              participant={pData}
-              metadata={{
-                ...matchMetadata,
-                contrast: blueTeamContrast,
-                userContrast: blueUserContrast,
-              }}
-            />
-          ))}
-        </tbody>
+        </tfoot>
       </table>
+
+      <div className="w-full bg-(--contrast) border-y-2 border-(--background) text-center">
+        <p className="m-8">match data will go here</p>
+      </div>
 
       <table className="w-full">
         <colgroup>
