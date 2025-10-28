@@ -11,6 +11,7 @@ import ExpandedMatchContainer from "./ExpandedDefaultMatch";
 import { getMatch } from "@/lib/client/lol";
 
 export default function LeagueMatchContainer({ matchData }) {
+  const userId = matchData.userPreview.riotIdGameName + matchData.userPreview.riotIdTagline;
   const didWin =
     matchData.userPreview.team === matchData.winningTeam && !matchData.gameEndedInEarlySurrender;
 
@@ -120,7 +121,7 @@ export default function LeagueMatchContainer({ matchData }) {
                     src={summonerIdToImagePath(matchData.userPreview.summoner1Id)}
                     width={25}
                     height={25}
-                    className="mb-0.5"
+                    className="rounded mb-0.5"
                     alt="summoner spell image"
                   />
                 </li>
@@ -129,6 +130,7 @@ export default function LeagueMatchContainer({ matchData }) {
                     src={summonerIdToImagePath(matchData.userPreview.summoner2Id)}
                     width={25}
                     height={25}
+                    className="rounded"
                     alt="summoner spell image"
                   />
                 </li>
@@ -263,11 +265,11 @@ export default function LeagueMatchContainer({ matchData }) {
       {showDiv && (
         <div
           id={`match-extra-${matchData.matchId}`}
-          className={`w-full bg-(--contrast) p-3 mt-2 rounded ${isOpen ? "" : "hidden"}`}
+          className={`w-full bg-(--contrast) mt-2 rounded ${isOpen ? "" : "hidden"}`}
         >
           {loading && <p className="text-gray-400 italic">Loading…</p>}
           {error && <p className="text-gray-400 italic">{error}</p>}
-          {details && <ExpandedMatchContainer completeData={details} />}
+          {details && <ExpandedMatchContainer completeData={details} userId={userId} region={region}/>}
           {!loading && !error && !details && (
             <p className="text-gray-400 italic">No data returned.</p>
           )}

@@ -10,6 +10,8 @@
   --league-win: #203e98;
   --league-loss: #4f2c2f;
   --league-remake: #35353e;
+  --user-win-contrast: #3654ad;
+  --user-loss-contrast: #6f353a;
 }
 
 @theme inline {
