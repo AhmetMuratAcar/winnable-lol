@@ -3,7 +3,7 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useState, useMemo } from "react";
 import { champIdToName } from "@/lib/utils/champs";
-import { IMG_PATH } from "@/lib/constants";
+import { CURR_PATCH, IMG_PATH } from "@/lib/constants";
 import RoleBarGraph from "../charts/RoleBarGraph";
 
 const WinLossDonut = dynamic(() => import("@/app/components/charts/WinLossDonut"), {
@@ -380,7 +380,7 @@ export default function RecentGames({ recentGames, totalGameCount }) {
                       {topChamps.map((c, i) => (
                         <div key={i} className="flex items-center text-gray-300 text-xs">
                           <Image
-                            src={`${IMG_PATH}/img/champion/tiles/${c.championName}_0.jpg`}
+                            src={`${IMG_PATH}/${CURR_PATCH}/img/champion/${c.championName}.png`}
                             width={25}
                             height={25}
                             className="rounded mr-2 border border-(--contrast-border) img-auto"
