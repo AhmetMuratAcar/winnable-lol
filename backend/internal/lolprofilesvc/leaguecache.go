@@ -88,6 +88,7 @@ func AssembleLeagueMatch(m types.MatchRow, ps []types.MatchParticipantRow) types
 		QueueId:                   m.QueueID,
 		Bans:                      [][]int{m.BansBlue, m.BansRed},
 		WinningTeam:               m.WinningTeam,
+		MostDamageDone:            0,
 	}
 
 	for _, p := range ps {
@@ -114,6 +115,10 @@ func AssembleLeagueMatch(m types.MatchRow, ps []types.MatchParticipantRow) types
 			VisionScore:                 p.VisionScore,
 			Runes:                       p.Runes,
 		})
+
+		if p.TotalDamageToChamps > lm.MostDamageDone {
+			lm.MostDamageDone = p.TotalDamageToChamps
+		}
 
 		lm.ParticipantPUUIDs = append(lm.ParticipantPUUIDs, p.PUUID)
 	}

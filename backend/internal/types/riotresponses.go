@@ -33,6 +33,7 @@ type LeagueMatch struct {
 	QueueId                   int                      `json:"queueId"`
 	Bans                      [][]int                  `json:"bans"`
 	WinningTeam               int                      `json:"winningTeam"`
+	MostDamageDone            int                      `json:"mostDamageDone"`
 }
 
 type LeagueMatchPreview struct {

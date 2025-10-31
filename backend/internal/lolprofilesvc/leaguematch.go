@@ -68,6 +68,7 @@ func ToLeagueMatch(raw types.RawMatchResponse) types.LeagueMatch {
 		MatchID:                   raw.Metadata.MatchID,
 		ParticipantPUUIDs:         raw.Metadata.Participants,
 		QueueId:                   raw.Info.QueueID,
+		MostDamageDone:            0,
 	}
 
 	participantCount := len(res.ParticipantPUUIDs) + 1
@@ -91,7 +92,6 @@ func ToLeagueMatch(raw types.RawMatchResponse) types.LeagueMatch {
 			TotalDamageDealtToChampions: p.TotalDamageDealtToChampions,
 			VisionScore:                 p.VisionScore,
 		}
-
 		curr.TotalMinionsKilled = p.TotalMinionsKilled + p.NeutralMinionsKilled
 
 		curr.Runes = types.SummonerRunes{
@@ -126,6 +126,10 @@ func ToLeagueMatch(raw types.RawMatchResponse) types.LeagueMatch {
 			curr.Team = 0
 		} else {
 			curr.Team = 1
+		}
+
+		if curr.TotalDamageDealtToChampions > res.MostDamageDone {
+			res.MostDamageDone = curr.TotalDamageDealtToChampions
 		}
 
 		res.Participants = append(res.Participants, curr)
