@@ -39,6 +39,7 @@ export default function ExpandedMatchContainer({ completeData, userId, region })
     gameDuration: completeData.gameDuration,
     region: region,
     userId: userId,
+    mostDamage: completeData.mostDamageDone,
     contrast: "",
     userContrast: "",
   };
@@ -57,20 +58,7 @@ export default function ExpandedMatchContainer({ completeData, userId, region })
           <col style={{ width: "9%" }} />
           <col style={{ width: "21%" }} />
         </colgroup>
-        <tbody className={`${blueTeamBg} text-xs`}>
-          {blueTeam.map((pData, index) => (
-            <ParticipantRow
-              key={index}
-              participant={pData}
-              metadata={{
-                ...matchMetadata,
-                contrast: blueTeamContrast,
-                userContrast: blueUserContrast,
-              }}
-            />
-          ))}
-        </tbody>
-        <tfoot>
+        <thead>
           <tr className="text-xs text-gray-400">
             <th className="text-left flex gap-x-1 py-2 pl-2">
               <div className={`font-bold ${blueTeamText}`}>{didBlueWin ? "Victory" : "Defeat"}</div>
@@ -92,7 +80,20 @@ export default function ExpandedMatchContainer({ completeData, userId, region })
               <div>Items</div>
             </th>
           </tr>
-        </tfoot>
+        </thead>
+        <tbody className={`${blueTeamBg} text-xs`}>
+          {blueTeam.map((pData, index) => (
+            <ParticipantRow
+              key={index}
+              participant={pData}
+              metadata={{
+                ...matchMetadata,
+                contrast: blueTeamContrast,
+                userContrast: blueUserContrast,
+              }}
+            />
+          ))}
+        </tbody>
       </table>
 
       <div className="w-full bg-(--contrast) border-y-2 border-(--background) text-center">
@@ -158,6 +159,9 @@ function ParticipantRow({ participant, metadata }) {
       : (participant.kills + participant.assists) / participant.deaths;
   const CSPM = participant.totalMinionsKilled / (metadata.gameDuration / 60);
   const champName = champIdToName(participant.championId);
+  const damagePct = Math.round(
+    (participant.totalDamageDealtToChampions / metadata.mostDamage) * 100,
+  );
 
   return (
     <tr className={`text-center ${targetUser ? metadata.userContrast : ""}`}>
@@ -242,6 +246,10 @@ function ParticipantRow({ participant, metadata }) {
       </td>
       <td>
         <div>{participant.totalDamageDealtToChampions.toLocaleString("en-US")}</div>
+        <div className="w-full h-1.5 mt-1 flex rounded overflow-hidden">
+          <div className="bg-(--pastel-red)" style={{ width: `${damagePct}%` }}></div>
+          <div className="bg-(--contrast)" style={{ width: `${100 - damagePct}%` }}></div>
+        </div>
       </td>
       <td>
         <div>{participant.visionScore}</div>
