@@ -34,6 +34,32 @@ type LeagueMatch struct {
 	Bans                      [][]int                  `json:"bans"`
 	WinningTeam               int                      `json:"winningTeam"`
 	MostDamageDone            int                      `json:"mostDamageDone"`
+	MostDamageTaken           int                      `json:"mostDamageTaken"`
+	TeamStats                 []TeamStats              `json:"teamStats"`
+}
+
+type TeamStats struct {
+	Bans       []int      `json:"bans"`
+	Feats      Feats      `json:"feats"`
+	Objectives Objectives `json:"objectives"`
+	Picks      []int      `json:"picks"`
+	TotalGold  int        `json:"totalGold"`
+	TotalKills int        `json:"totalKills"`
+}
+
+type Feats struct {
+	FirstTurret    bool `json:"firstTurret"`
+	Warfare        bool `json:"warfare"`
+	MonsterSlaying bool `json:"monsterSlaying"`
+}
+
+type Objectives struct {
+	AtakhanKills   int `json:"atakhanKills"`
+	DragonKills    int `json:"dragonKills"`
+	GrubKills      int `json:"grubKills"`
+	HeraldKills    int `json:"heraldKills"`
+	InhibitorKills int `json:"inhibsDestroyed"`
+	TowerKills     int `json:"towersDestroyed"`
 }
 
 type LeagueMatchPreview struct {
@@ -68,6 +94,7 @@ type LeagueMatchParticipant struct {
 	Team                        int           `json:"team"`
 	TeamPosition                string        `json:"teamPosition"`
 	TotalDamageDealtToChampions int           `json:"totalDamageDealtToChampions"`
+	TotalDamageTaken            int           `json:"totalDamageTaken"`
 	TotalMinionsKilled          int           `json:"totalMinionsKilled"`
 	VisionScore                 int           `json:"visionScore"`
 }

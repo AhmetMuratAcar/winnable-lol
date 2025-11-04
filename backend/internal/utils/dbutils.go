@@ -363,6 +363,7 @@ func GetParticipantsForMatches(ctx context.Context, pool *pgxpool.Pool, ids []st
 			deaths,
 			assists,
 			gold_earned,
+			total_damage_taken,
 			total_damage_to_champs,
 			total_minions_killed,
 			vision_score,
@@ -407,6 +408,7 @@ func GetParticipantsForMatches(ctx context.Context, pool *pgxpool.Pool, ids []st
 			deaths             int
 			assists            int
 			goldEarned         int
+			totalDmgTaken      int
 			totalDmgToChamps   int
 			totalMinions       int
 			visionScore        int
@@ -432,7 +434,7 @@ func GetParticipantsForMatches(ctx context.Context, pool *pgxpool.Pool, ids []st
 
 		if err := rows.Scan(
 			&mID, &puuid, &participantIdxI16, &teamI16, &championID, &champLevel,
-			&kills, &deaths, &assists, &goldEarned, &totalDmgToChamps, &totalMinions,
+			&kills, &deaths, &assists, &goldEarned, &totalDmgTaken, &totalDmgToChamps, &totalMinions,
 			&visionScore, &items, &s1ID, &s2ID, &teamPosition, &riotGameName,
 			&riotTagLine, &summonerLevelMatch, &profileIconMatch, &gameStart,
 			&runeMainKeystone, &runeMain1, &runeMain2, &runeMain3,
@@ -452,6 +454,7 @@ func GetParticipantsForMatches(ctx context.Context, pool *pgxpool.Pool, ids []st
 			Deaths:               deaths,
 			Assists:              assists,
 			GoldEarned:           goldEarned,
+			TotalDamageTaken:     totalDmgTaken,
 			TotalDamageToChamps:  totalDmgToChamps,
 			TotalMinionsKilled:   totalMinions,
 			VisionScore:          visionScore,
@@ -574,6 +577,7 @@ func GetParticipantRowsByID(ctx context.Context, pool *pgxpool.Pool, matchID str
 			deaths,
 			assists,
 			gold_earned,
+			total_damage_taken,
 			total_damage_to_champs,
 			total_minions_killed,
 			vision_score,
@@ -618,6 +622,7 @@ func GetParticipantRowsByID(ctx context.Context, pool *pgxpool.Pool, matchID str
 			deaths             int
 			assists            int
 			goldEarned         int
+			totalDmgTaken      int
 			totalDmgToChamps   int
 			totalMinions       int
 			visionScore        int
@@ -643,7 +648,7 @@ func GetParticipantRowsByID(ctx context.Context, pool *pgxpool.Pool, matchID str
 
 		if err := rows.Scan(
 			&mID, &puuid, &participantIdxI16, &teamI16, &championID, &champLevel,
-			&kills, &deaths, &assists, &goldEarned, &totalDmgToChamps, &totalMinions,
+			&kills, &deaths, &assists, &goldEarned, &totalDmgTaken, &totalDmgToChamps, &totalMinions,
 			&visionScore, &items, &s1ID, &s2ID, &teamPosition, &riotGameName,
 			&riotTagLine, &summonerLevelMatch, &profileIconMatch, &gameStart,
 			&runeMainKeystone, &runeMain1, &runeMain2, &runeMain3,
@@ -663,6 +668,7 @@ func GetParticipantRowsByID(ctx context.Context, pool *pgxpool.Pool, matchID str
 			Deaths:               deaths,
 			Assists:              assists,
 			GoldEarned:           goldEarned,
+			TotalDamageTaken:     totalDmgTaken,
 			TotalDamageToChamps:  totalDmgToChamps,
 			TotalMinionsKilled:   totalMinions,
 			VisionScore:          visionScore,
@@ -731,7 +737,7 @@ func AddMatchData(ctx context.Context, pool *pgxpool.Pool, matchData []types.Lea
 	`
 
 	const insertParticipant = `
-		INSERT INTO match_participants (
+  	INSERT INTO match_participants (
 			match_id,
 			puuid,
 			participant_index,
@@ -742,6 +748,7 @@ func AddMatchData(ctx context.Context, pool *pgxpool.Pool, matchData []types.Lea
 			deaths,
 			assists,
 			gold_earned,
+			total_damage_taken,
 			total_damage_to_champs,
 			total_minions_killed,
 			vision_score,
@@ -765,9 +772,8 @@ func AddMatchData(ctx context.Context, pool *pgxpool.Pool, matchData []types.Lea
 			rune_stat_defense
 		)
 		VALUES (
-			$1,$2,$3,$4::smallint,$5,$6,$7,$8,$9,$10,$11,$12,$13,
-			$14::int[],$15,$16,$17,$18,$19,$20,$21,$22,$23, $24, 
-			$25, $26, $27, $28, $29, $30, $31
+			$1,$2,$3,$4::smallint,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,
+			$15::int[],$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32
 		)
 	`
 
@@ -820,6 +826,7 @@ func AddMatchData(ctx context.Context, pool *pgxpool.Pool, matchData []types.Lea
 				p.Deaths,
 				p.Assists,
 				p.GoldEarned,
+				p.TotalDamageTaken,
 				p.TotalDamageDealtToChampions,
 				p.TotalMinionsKilled,
 				p.VisionScore,

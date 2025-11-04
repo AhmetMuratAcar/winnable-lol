@@ -49,6 +49,7 @@ type MatchParticipantRow struct {
 	Deaths               int
 	Assists              int
 	GoldEarned           int
+	TotalDamageTaken     int
 	TotalDamageToChamps  int
 	TotalMinionsKilled   int
 	VisionScore          int
