@@ -52,7 +52,6 @@ type MatchParticipantRow struct {
 	TotalDamageTaken     int
 	TotalDamageToChamps  int
 	TotalMinionsKilled   int
-	VisionScore          int
 	Items                []int
 	Summoner1ID          int
 	Summoner2ID          int
@@ -63,6 +62,9 @@ type MatchParticipantRow struct {
 	ProfileIconAtMatch   int
 	GameStart            time.Time
 	Runes                SummonerRunes
+	ControlWardsPlaced   int
+	WardsPlaced          int
+	WardsKilled          int
 }
 
 type SummonerRow struct {

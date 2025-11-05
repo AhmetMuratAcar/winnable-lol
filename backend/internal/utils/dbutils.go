@@ -366,7 +366,6 @@ func GetParticipantsForMatches(ctx context.Context, pool *pgxpool.Pool, ids []st
 			total_damage_taken,
 			total_damage_to_champs,
 			total_minions_killed,
-			vision_score,
 			items,
 			summoner1_id,
 			summoner2_id,
@@ -384,7 +383,10 @@ func GetParticipantsForMatches(ctx context.Context, pool *pgxpool.Pool, ids []st
 			rune_second_2,
 			rune_stat_offense,
 			rune_stat_flex,
-			rune_stat_defense
+			rune_stat_defense,
+			control_wards_placed,
+			wards_placed,
+			wards_killed
 		FROM match_participants
 		WHERE match_id = ANY($1)
 		ORDER BY match_id, participant_index
@@ -411,7 +413,6 @@ func GetParticipantsForMatches(ctx context.Context, pool *pgxpool.Pool, ids []st
 			totalDmgTaken      int
 			totalDmgToChamps   int
 			totalMinions       int
-			visionScore        int
 			items              []int
 			s1ID               int
 			s2ID               int
@@ -430,15 +431,19 @@ func GetParticipantsForMatches(ctx context.Context, pool *pgxpool.Pool, ids []st
 			runeOffense        int
 			runeFlex           int
 			runeDefense        int
+			controlWardsPlaced int
+			wardsPlaced        int
+			wardsKilled        int
 		)
 
 		if err := rows.Scan(
 			&mID, &puuid, &participantIdxI16, &teamI16, &championID, &champLevel,
 			&kills, &deaths, &assists, &goldEarned, &totalDmgTaken, &totalDmgToChamps, &totalMinions,
-			&visionScore, &items, &s1ID, &s2ID, &teamPosition, &riotGameName,
+			&items, &s1ID, &s2ID, &teamPosition, &riotGameName,
 			&riotTagLine, &summonerLevelMatch, &profileIconMatch, &gameStart,
 			&runeMainKeystone, &runeMain1, &runeMain2, &runeMain3,
-			&runeSecond1, &runeSecond2, &runeOffense, &runeFlex, &runeDefense,
+			&runeSecond1, &runeSecond2, &runeOffense, &runeFlex, &runeDefense, &controlWardsPlaced,
+			&wardsPlaced, &wardsKilled,
 		); err != nil {
 			return nil, fmt.Errorf("scan participant row: %w", err)
 		}
@@ -457,7 +462,6 @@ func GetParticipantsForMatches(ctx context.Context, pool *pgxpool.Pool, ids []st
 			TotalDamageTaken:     totalDmgTaken,
 			TotalDamageToChamps:  totalDmgToChamps,
 			TotalMinionsKilled:   totalMinions,
-			VisionScore:          visionScore,
 			Items:                items,
 			Summoner1ID:          s1ID,
 			Summoner2ID:          s2ID,
@@ -484,6 +488,9 @@ func GetParticipantsForMatches(ctx context.Context, pool *pgxpool.Pool, ids []st
 					Rune2: runeSecond2,
 				},
 			},
+			ControlWardsPlaced: controlWardsPlaced,
+			WardsPlaced:        wardsPlaced,
+			WardsKilled:        wardsKilled,
 		})
 	}
 	if err := rows.Err(); err != nil {
@@ -580,7 +587,6 @@ func GetParticipantRowsByID(ctx context.Context, pool *pgxpool.Pool, matchID str
 			total_damage_taken,
 			total_damage_to_champs,
 			total_minions_killed,
-			vision_score,
 			items,
 			summoner1_id,
 			summoner2_id,
@@ -598,7 +604,10 @@ func GetParticipantRowsByID(ctx context.Context, pool *pgxpool.Pool, matchID str
 			rune_second_2,
 			rune_stat_offense,
 			rune_stat_flex,
-			rune_stat_defense
+			rune_stat_defense,
+			control_wards_placed,
+			wards_placed,
+			wards_killed
 		FROM match_participants
 		WHERE match_id = $1
 		ORDER BY participant_index;
@@ -625,7 +634,6 @@ func GetParticipantRowsByID(ctx context.Context, pool *pgxpool.Pool, matchID str
 			totalDmgTaken      int
 			totalDmgToChamps   int
 			totalMinions       int
-			visionScore        int
 			items              []int
 			s1ID               int
 			s2ID               int
@@ -644,15 +652,19 @@ func GetParticipantRowsByID(ctx context.Context, pool *pgxpool.Pool, matchID str
 			runeOffense        int
 			runeFlex           int
 			runeDefense        int
+			controlWardsPlaced int
+			wardsPlaced        int
+			wardsKilled        int
 		)
 
 		if err := rows.Scan(
 			&mID, &puuid, &participantIdxI16, &teamI16, &championID, &champLevel,
 			&kills, &deaths, &assists, &goldEarned, &totalDmgTaken, &totalDmgToChamps, &totalMinions,
-			&visionScore, &items, &s1ID, &s2ID, &teamPosition, &riotGameName,
+			&items, &s1ID, &s2ID, &teamPosition, &riotGameName,
 			&riotTagLine, &summonerLevelMatch, &profileIconMatch, &gameStart,
 			&runeMainKeystone, &runeMain1, &runeMain2, &runeMain3,
-			&runeSecond1, &runeSecond2, &runeOffense, &runeFlex, &runeDefense,
+			&runeSecond1, &runeSecond2, &runeOffense, &runeFlex, &runeDefense, &controlWardsPlaced,
+			&wardsPlaced, &wardsKilled,
 		); err != nil {
 			return nil, fmt.Errorf("scan participant row for %s: %w", matchID, err)
 		}
@@ -671,7 +683,6 @@ func GetParticipantRowsByID(ctx context.Context, pool *pgxpool.Pool, matchID str
 			TotalDamageTaken:     totalDmgTaken,
 			TotalDamageToChamps:  totalDmgToChamps,
 			TotalMinionsKilled:   totalMinions,
-			VisionScore:          visionScore,
 			Items:                items,
 			Summoner1ID:          s1ID,
 			Summoner2ID:          s2ID,
@@ -698,6 +709,9 @@ func GetParticipantRowsByID(ctx context.Context, pool *pgxpool.Pool, matchID str
 					Rune2: runeSecond2,
 				},
 			},
+			ControlWardsPlaced: controlWardsPlaced,
+			WardsPlaced:        wardsPlaced,
+			WardsKilled:        wardsKilled,
 		})
 	}
 
@@ -737,7 +751,7 @@ func AddMatchData(ctx context.Context, pool *pgxpool.Pool, matchData []types.Lea
 	`
 
 	const insertParticipant = `
-  	INSERT INTO match_participants (
+		INSERT INTO match_participants (
 			match_id,
 			puuid,
 			participant_index,
@@ -751,7 +765,6 @@ func AddMatchData(ctx context.Context, pool *pgxpool.Pool, matchData []types.Lea
 			total_damage_taken,
 			total_damage_to_champs,
 			total_minions_killed,
-			vision_score,
 			items,
 			summoner1_id,
 			summoner2_id,
@@ -769,11 +782,16 @@ func AddMatchData(ctx context.Context, pool *pgxpool.Pool, matchData []types.Lea
 			rune_second_2,
 			rune_stat_offense,
 			rune_stat_flex,
-			rune_stat_defense
+			rune_stat_defense,
+			control_wards_placed,
+			wards_placed,
+			wards_killed
 		)
 		VALUES (
-			$1,$2,$3,$4::smallint,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,
-			$15::int[],$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32
+			$1,$2,$3,$4::smallint,$5,$6,$7,$8,$9,$10,
+			$11,$12,$13,$14::int[],$15,$16,$17,$18,$19,$20,
+			$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,
+			$31,$32,$33,$34
 		)
 	`
 
@@ -829,7 +847,6 @@ func AddMatchData(ctx context.Context, pool *pgxpool.Pool, matchData []types.Lea
 				p.TotalDamageTaken,
 				p.TotalDamageDealtToChampions,
 				p.TotalMinionsKilled,
-				p.VisionScore,
 				p.Items,
 				p.Summoner1ID,
 				p.Summoner2ID,
@@ -848,6 +865,9 @@ func AddMatchData(ctx context.Context, pool *pgxpool.Pool, matchData []types.Lea
 				p.Runes.StatPerks.Offense,
 				p.Runes.StatPerks.Flex,
 				p.Runes.StatPerks.Defense,
+				p.ControlWardsPlaced,
+				p.WardsPlaced,
+				p.WardsKilled,
 			)
 		}
 	}

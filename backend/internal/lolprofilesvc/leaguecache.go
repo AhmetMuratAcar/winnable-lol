@@ -114,8 +114,10 @@ func AssembleLeagueMatch(m types.MatchRow, ps []types.MatchParticipantRow) types
 			TotalDamageTaken:            p.TotalDamageTaken,
 			TotalDamageDealtToChampions: p.TotalDamageToChamps,
 			TotalMinionsKilled:          p.TotalMinionsKilled,
-			VisionScore:                 p.VisionScore,
 			Runes:                       p.Runes,
+			ControlWardsPlaced:          p.ControlWardsPlaced,
+			WardsPlaced:                 p.WardsPlaced,
+			WardsKilled:                 p.WardsKilled,
 		})
 
 		if p.TotalDamageToChamps > lm.MostDamageDone {

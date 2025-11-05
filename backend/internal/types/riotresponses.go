@@ -96,7 +96,9 @@ type LeagueMatchParticipant struct {
 	TotalDamageDealtToChampions int           `json:"totalDamageDealtToChampions"`
 	TotalDamageTaken            int           `json:"totalDamageTaken"`
 	TotalMinionsKilled          int           `json:"totalMinionsKilled"`
-	VisionScore                 int           `json:"visionScore"`
+	ControlWardsPlaced          int           `json:"controlWardsPlaced"`
+	WardsPlaced                 int           `json:"wardsPlaced"`
+	WardsKilled                 int           `json:"wardsKilled"`
 }
 
 type UserMatchPreview struct {
@@ -262,11 +264,14 @@ type RawMatchResponse struct {
 		GameVersion        string `json:"gameVersion"`
 		MapID              int    `json:"mapId"`
 		Participants       []struct {
-			AllInPings                  int    `json:"allInPings"`
-			AssistMePings               int    `json:"assistMePings"`
-			Assists                     int    `json:"assists"`
-			BaronKills                  int    `json:"baronKills"`
-			BasicPings                  int    `json:"basicPings"`
+			AllInPings    int `json:"allInPings"`
+			AssistMePings int `json:"assistMePings"`
+			Assists       int `json:"assists"`
+			BaronKills    int `json:"baronKills"`
+			BasicPings    int `json:"basicPings"`
+			Challenges    struct {
+				ControlWardsPlaced int `json:"controlWardsPlaced"`
+			} `json:"challenges"`
 			ChampExperience             int    `json:"champExperience"`
 			ChampLevel                  int    `json:"champLevel"`
 			ChampionID                  int    `json:"championId"`

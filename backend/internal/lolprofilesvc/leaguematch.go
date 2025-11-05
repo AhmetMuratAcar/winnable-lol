@@ -92,7 +92,9 @@ func ToLeagueMatch(raw types.RawMatchResponse) types.LeagueMatch {
 			TeamPosition:                p.TeamPosition,
 			TotalDamageDealtToChampions: p.TotalDamageDealtToChampions,
 			TotalDamageTaken:            p.TotalDamageTaken,
-			VisionScore:                 p.VisionScore,
+			ControlWardsPlaced:          p.Challenges.ControlWardsPlaced,
+			WardsPlaced:                 p.WardsPlaced,
+			WardsKilled:                 p.WardsKilled,
 		}
 		curr.TotalMinionsKilled = p.TotalMinionsKilled + p.NeutralMinionsKilled
 
