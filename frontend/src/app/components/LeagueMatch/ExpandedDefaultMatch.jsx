@@ -40,6 +40,7 @@ export default function ExpandedMatchContainer({ completeData, userId, region })
     region: region,
     userId: userId,
     mostDamage: completeData.mostDamageDone,
+    mostDamageTaken: completeData.mostDamageTaken,
     contrast: "",
     userContrast: "",
   };
@@ -51,10 +52,10 @@ export default function ExpandedMatchContainer({ completeData, userId, region })
     <div className="text-sm rounded overflow-hidden">
       <table className="w-full">
         <colgroup>
-          <col style={{ width: "40%" }} />
+          <col style={{ width: "31%" }} />
           <col style={{ width: "11%" }} />
           <col style={{ width: "10%" }} />
-          <col style={{ width: "9%" }} />
+          <col style={{ width: "18%" }} />
           <col style={{ width: "9%" }} />
           <col style={{ width: "21%" }} />
         </colgroup>
@@ -102,10 +103,10 @@ export default function ExpandedMatchContainer({ completeData, userId, region })
 
       <table className="w-full">
         <colgroup>
-          <col style={{ width: "40%" }} />
+          <col style={{ width: "31%" }} />
           <col style={{ width: "11%" }} />
           <col style={{ width: "10%" }} />
-          <col style={{ width: "9%" }} />
+          <col style={{ width: "18%" }} />
           <col style={{ width: "9%" }} />
           <col style={{ width: "21%" }} />
         </colgroup>
@@ -162,6 +163,7 @@ function ParticipantRow({ participant, metadata }) {
   const damagePct = Math.round(
     (participant.totalDamageDealtToChampions / metadata.mostDamage) * 100,
   );
+  const takenPct = Math.round((participant.totalDamageTaken / metadata.mostDamageTaken) * 100);
 
   return (
     <tr className={`text-center ${targetUser ? metadata.userContrast : ""}`}>
@@ -245,10 +247,22 @@ function ParticipantRow({ participant, metadata }) {
         <div className="text-gray-400">{CSPM.toFixed(1)}/m</div>
       </td>
       <td>
-        <div>{participant.totalDamageDealtToChampions.toLocaleString("en-US")}</div>
-        <div className="w-full h-1.5 mt-1 flex rounded overflow-hidden">
-          <div className="bg-(--pastel-red)" style={{ width: `${damagePct}%` }}></div>
-          <div className="bg-(--contrast)" style={{ width: `${100 - damagePct}%` }}></div>
+        <div className="flex justify-between gap-4">
+          <div id="damageDone" className="w-1/2">
+            <div>{participant.totalDamageDealtToChampions.toLocaleString("en-US")}</div>
+            <div className="w-full h-1.5 mt-1 flex rounded overflow-hidden">
+              <div className="bg-(--pastel-red)" style={{ width: `${damagePct}%` }}></div>
+              <div className="bg-(--contrast)" style={{ width: `${100 - damagePct}%` }}></div>
+            </div>
+          </div>
+
+          <div id="damageTaken" className="w-1/2">
+            <div>{participant.totalDamageTaken.toLocaleString("en-US")}</div>
+            <div className="w-full h-1.5 mt-1 flex rounded overflow-hidden">
+              <div className="bg-gray-500" style={{ width: `${damagePct}%` }}></div>
+              <div className="bg-(--contrast)" style={{ width: `${100 - damagePct}%` }}></div>
+            </div>
+          </div>
         </div>
       </td>
       <td>
