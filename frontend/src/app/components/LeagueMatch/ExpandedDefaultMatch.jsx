@@ -247,7 +247,7 @@ function ParticipantRow({ participant, metadata }) {
         <div className="text-gray-400">{CSPM.toFixed(1)}/m</div>
       </td>
       <td>
-        <div className="flex justify-between gap-4">
+        <div className="flex justify-between gap-2">
           <div id="damageDone" className="w-1/2">
             <div>{participant.totalDamageDealtToChampions.toLocaleString("en-US")}</div>
             <div className="w-full h-1.5 mt-1 flex rounded overflow-hidden">
@@ -259,14 +259,17 @@ function ParticipantRow({ participant, metadata }) {
           <div id="damageTaken" className="w-1/2">
             <div>{participant.totalDamageTaken.toLocaleString("en-US")}</div>
             <div className="w-full h-1.5 mt-1 flex rounded overflow-hidden">
-              <div className="bg-gray-500" style={{ width: `${damagePct}%` }}></div>
-              <div className="bg-(--contrast)" style={{ width: `${100 - damagePct}%` }}></div>
+              <div className="bg-gray-500" style={{ width: `${takenPct}%` }}></div>
+              <div className="bg-(--contrast)" style={{ width: `${100 - takenPct}%` }}></div>
             </div>
           </div>
         </div>
       </td>
       <td>
-        <div>{participant.visionScore}</div>
+        <div>{participant.controlWardsPlaced}</div>
+        <div>
+          {participant.wardsPlaced} / {participant.wardsKilled}
+        </div>
       </td>
       <td className="pr-2">
         <div className="flex gap-1">
