@@ -40,12 +40,12 @@ export default function LeagueMatchContainer({ matchData }) {
     },
     Victory: {
       bg: "bg-(--league-win)",
-      contrast: "bg-blue-500",
+      contrast: "bg-(--user-win-contrast)",
       button: "bg-blue-500 hover:bg-(--league-win)",
     },
     Defeat: {
       bg: "bg-(--league-loss)",
-      contrast: "bg-(--pastel-red)",
+      contrast: "bg-(--user-loss-contrast)",
       button: "bg-(--pastel-red) hover:bg-(--league-loss)",
     },
   };

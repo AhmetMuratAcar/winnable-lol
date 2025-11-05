@@ -9,13 +9,13 @@ export default function ExpandedMatchContainer({ completeData, userId, region })
     Victory: {
       bg: "bg-(--league-win)",
       text: "text-blue-500",
-      contrast: "bg-blue-500",
+      itemContrast: "bg-(--item-win)",
       user: "bg-(--user-win-contrast)",
     },
     Defeat: {
       bg: "bg-(--league-loss)",
       text: "text-(--pastel-red)",
-      contrast: "bg-(--pastel-red)",
+      itemContrast: "bg-(--item-loss)",
       user: "bg-(--user-loss-contrast)",
     },
   };
@@ -24,24 +24,23 @@ export default function ExpandedMatchContainer({ completeData, userId, region })
   const {
     bg: blueTeamBg,
     text: blueTeamText,
-    contrast: blueTeamContrast,
+    itemContrast: blueItemContrast,
     user: blueUserContrast,
   } = didBlueWin ? colorMap["Victory"] : colorMap["Defeat"];
   const {
     bg: redTeamBg,
     text: redTeamText,
-    contrast: redTeamContrast,
+    itemContrast: redItemContrast,
     user: redUserContrast,
   } = didBlueWin ? colorMap["Defeat"] : colorMap["Victory"];
 
-  // TODO: add most damage and most damage taken to metadata
   const matchMetadata = {
     gameDuration: completeData.gameDuration,
     region: region,
     userId: userId,
     mostDamage: completeData.mostDamageDone,
     mostDamageTaken: completeData.mostDamageTaken,
-    contrast: "",
+    itemContrast: "",
     userContrast: "",
   };
 
@@ -89,7 +88,7 @@ export default function ExpandedMatchContainer({ completeData, userId, region })
               participant={pData}
               metadata={{
                 ...matchMetadata,
-                contrast: blueTeamContrast,
+                itemContrast: blueItemContrast,
                 userContrast: blueUserContrast,
               }}
             />
@@ -140,7 +139,7 @@ export default function ExpandedMatchContainer({ completeData, userId, region })
               participant={pData}
               metadata={{
                 ...matchMetadata,
-                contrast: redTeamContrast,
+                itemContrast: redItemContrast,
                 userContrast: redUserContrast,
               }}
             />
@@ -275,7 +274,7 @@ function ParticipantRow({ participant, metadata }) {
         <div className="flex gap-1">
           {participant.items.map((itemId, index) => (
             <div
-              className={`h-6 w-6 rounded flex items-center justify-center ${metadata.userContrast}`}
+              className={`h-6 w-6 rounded flex items-center justify-center ${metadata.itemContrast}`}
               key={`${itemId} - ${index}`}
             >
               {itemId !== 0 && (

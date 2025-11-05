@@ -12,6 +12,8 @@
   --league-remake: #35353e;
   --user-win-contrast: #3654ad;
   --user-loss-contrast: #6f353a;
+  --item-win: #4061c5;
+  --item-loss: #814147;
 }
 
 @theme inline {
