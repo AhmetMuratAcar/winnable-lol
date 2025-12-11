@@ -1,8 +1,8 @@
 go 1.23.4
 
 use (
-    ./apps/api
-    ./apps/crawler
-    ./apps/ingester
-    ./libs/riotclient
+	./apps/api
+	./apps/crawler
+	./apps/ingester
+	./libs/riotclient
 )
