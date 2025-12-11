@@ -54,12 +54,13 @@ type Feats struct {
 }
 
 type Objectives struct {
-	AtakhanKills   int `json:"atakhanKills"`
-	DragonKills    int `json:"dragonKills"`
-	GrubKills      int `json:"grubKills"`
-	HeraldKills    int `json:"heraldKills"`
-	InhibitorKills int `json:"inhibsDestroyed"`
-	TowerKills     int `json:"towersDestroyed"`
+	AtakhanKills     int `json:"atakhanKills"`
+	DragonKills      int `json:"dragonKills"`
+	ElderDragonKills int `json:"elderDragonKills"`
+	GrubKills        int `json:"grubKills"`
+	HeraldKills      int `json:"heraldKills"`
+	InhibitorKills   int `json:"inhibitorKills"`
+	TowerKills       int `json:"towerKills"`
 }
 
 type LeagueMatchPreview struct {

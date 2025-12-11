@@ -3,7 +3,8 @@ package utils
 import (
 	"encoding/json"
 	"net/http"
-	"winnable/internal/types"
+
+	"github.com/AhmetMuratAcar/winnable-lol/apps/api/internal/types"
 )
 
 type ErrorResponse struct {

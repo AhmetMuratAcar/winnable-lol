@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"winnable/internal/config"
-	"winnable/internal/types"
+	"github.com/AhmetMuratAcar/winnable-lol/apps/api/internal/config"
+	"github.com/AhmetMuratAcar/winnable-lol/apps/api/internal/types"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"

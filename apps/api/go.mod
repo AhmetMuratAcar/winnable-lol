@@ -1,9 +1,9 @@
-module winnable
+module github.com/AhmetMuratAcar/winnable-lol/apps/api
 
 go 1.23.4
 
 require (
-	github.com/jackc/pgx/v5 v5.7.5
+	github.com/jackc/pgx/v5 v5.7.6
 	github.com/joho/godotenv v1.5.1
 )
 

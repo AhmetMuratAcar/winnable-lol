@@ -1,7 +1,7 @@
 package lolprofilesvc
 
 import (
-	"winnable/internal/types"
+	"github.com/AhmetMuratAcar/winnable-lol/apps/api/internal/types"
 )
 
 // ToLeagueMatchPreview converts LeagueMatch -> LeagueMatchPreview

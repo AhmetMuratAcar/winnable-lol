@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"winnable/internal/types"
+	"github.com/AhmetMuratAcar/winnable-lol/apps/api/internal/types"
 )
 
 func WriteProfileToFile(data types.LeagueProfilePage, riotID string) error {

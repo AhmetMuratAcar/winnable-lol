@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"winnable/internal/lolprofilesvc"
-	"winnable/internal/types"
+	"github.com/AhmetMuratAcar/winnable-lol/apps/api/internal/lolprofilesvc"
+	"github.com/AhmetMuratAcar/winnable-lol/apps/api/internal/types"
 )
 
 type RiotClient struct {

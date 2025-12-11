@@ -3,7 +3,8 @@ package lolprofilesvc
 import (
 	"fmt"
 	"strings"
-	"winnable/internal/types"
+
+	"github.com/AhmetMuratAcar/winnable-lol/apps/api/internal/types"
 )
 
 func ToLiveLeagueGame(raw types.RawLiveResponse) types.LiveLeagueGame {

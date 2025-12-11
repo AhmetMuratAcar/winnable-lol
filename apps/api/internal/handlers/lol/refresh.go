@@ -7,10 +7,11 @@ import (
 	"net/http"
 	"os"
 	"time"
-	"winnable/internal/lolprofilesvc"
-	"winnable/internal/riot"
-	"winnable/internal/types"
-	"winnable/internal/utils"
+
+	"github.com/AhmetMuratAcar/winnable-lol/apps/api/internal/lolprofilesvc"
+	"github.com/AhmetMuratAcar/winnable-lol/apps/api/internal/riot"
+	"github.com/AhmetMuratAcar/winnable-lol/apps/api/internal/types"
+	"github.com/AhmetMuratAcar/winnable-lol/apps/api/internal/utils"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )

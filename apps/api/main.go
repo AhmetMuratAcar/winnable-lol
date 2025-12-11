@@ -8,9 +8,9 @@ import (
 	"os"
 	"time"
 
-	"winnable/internal/handlers"
-	"winnable/internal/handlers/lol"
-	"winnable/internal/middleware"
+	"github.com/AhmetMuratAcar/winnable-lol/apps/api/internal/handlers"
+	"github.com/AhmetMuratAcar/winnable-lol/apps/api/internal/handlers/lol"
+	"github.com/AhmetMuratAcar/winnable-lol/apps/api/internal/middleware"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"

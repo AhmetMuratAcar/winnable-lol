@@ -3,7 +3,8 @@ package lolprofilesvc
 import (
 	"fmt"
 	"sort"
-	"winnable/internal/types"
+
+	"github.com/AhmetMuratAcar/winnable-lol/apps/api/internal/types"
 )
 
 func UpdateRecentlyPlayedWithAndAgainst() {}
